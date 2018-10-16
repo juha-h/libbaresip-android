@@ -91,5 +91,5 @@ $ make baresip
 $ make install-openssl
 $ make install-opus # optional
 $ make install-zrtp # optional
-$ make install libbaresip
+$ make install-libbaresip
 ```
