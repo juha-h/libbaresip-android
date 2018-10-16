@@ -19,6 +19,7 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads/
 ```
+or use ndk-bundle that comes with Andoid SDK.
 
 ## Step 1 - download source code
 
