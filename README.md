@@ -85,8 +85,7 @@ $ make zrtp
 $ make baresip
 ```
 
-## Step 8 - install libraries and include files to your Android Studio
-project (optional)
+## Step 8 - install results to your Android Studio project (optional)
 
 ```
 $ make install-openssl
