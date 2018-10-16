@@ -5,9 +5,9 @@ This project shows how to build libbaresip for Android using Android NDK
 r18 or later that only support clang.  Resulting libbaresip can be used
 in Baresip based Android applications.
 
-Supported NDKs
+Currently supported NDKs:
 
-| NDK: | Supported: |
+| NDK  | Supported  |
 |------|------------|
 | r18  | Yes        |
 | r17  | No         |
@@ -15,7 +15,7 @@ Supported NDKs
 
 ## Step 0 - download Android NDK
 
-Download and unzip latest Android NDK for Linux from
+Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads/
 ```
@@ -41,9 +41,10 @@ Unpack packed source code and create symlinks:
 ```
 $ tar zxf openssl-1.1.1.tar.gz
 $ ln -s openssl-1.1.1 openssl
+# If downloaded:
 $ tar zxf opus-1.1.3.tar.gz
-# Optionally
 $ ln -s opus-1.1.3 opus
+# If downloaded:
 $ unzip master.zip
 $ ln -s libzrtp-master zrtp
 ```
@@ -59,31 +60,32 @@ After that you should have a layout like this:
 
 ## Step 3 - adjust Makefile variables
 
-Adjust Makefile variables NDK_PATH, STUDIO_PATH (optional path of
-your Android Studio project), and API_LEVEL.
+If needed, adjust Makefile variables NDK_PATH, STUDIO_PATH (optional
+path to your Android Studio project), and API_LEVEL.
 
 ## Step 4 - create standalone toolchain
 ```
 $ make toolchain
 ```
 
-## Step 4 - build openssl
+## Step 5 - build openssl
 ```
 $ make openssl
+```
 
-## Step 5 - build opus (optional) and zrtp (optional)
+## Step 6 - build opus (optional) and zrtp (optional)
 
 ```
 $ make opus
 $ make zrtp
 ```
 
-## Step 5 - build libbaresip
+## Step 7 - build libbaresip
 ```
-$ make baresip.a
+$ make baresip
 ```
 
-## Step 6 - install libraries and include files to your Android Studio
+## Step 8 - install libraries and include files to your Android Studio
 project (optional)
 
 ```
