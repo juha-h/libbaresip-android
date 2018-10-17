@@ -5,7 +5,8 @@
 #
 
 # Paths to your Android SDK/NDK
-NDK_PATH  := /usr/local/android-ndk-r18b
+#NDK_PATH  := /usr/local/android-ndk-r18b
+NDK_PATH   := /usr/local/Android/Sdk/ndk-bundle
 PROJECT_PATH := /usr/src/baresip-studio
 
 # Android API level:
@@ -100,40 +101,6 @@ endif
 
 default:	libbaresip
 
-libre.a: Makefile
-	@rm -f re/libre.*
-	PATH=$(PATH) make $@ -C re $(COMMON_FLAGS)
-
-librem.a:	Makefile libre.a
-	@rm -f rem/librem.*
-	PATH=$(PATH) make $@ -C rem $(COMMON_FLAGS)
-
-libbaresip:	Makefile librem.a libre.a
-	@rm -f baresip/baresip baresip/src/static.c
-	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" \
-	PATH=$(PATH) make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 \
-		LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem \
-	        MOD_AUTODETECT= \
-		EXTRA_MODULES="$(EXTRA_MODULES)"
-
-ifneq ("$(wildcard $(PWD)/baresip/libbaresip.a)","")
-install-libbaresip:
-	cp $(PWD)/re/libre.a $(PROJECT_PATH)/distribution/re/lib/armeabi-v7a
-	cp $(PWD)/re/include/* $(PROJECT_PATH)/distribution/re/include
-	cp $(PWD)/rem/librem.a $(PROJECT_PATH)/distribution/rem/lib/armeabi-v7a
-	cp $(PWD)/rem/include/* $(PROJECT_PATH)/distribution/rem/include
-	cp $(PWD)/baresip/libbaresip.a $(PROJECT_PATH)/distribution/baresip/lib/armeabi-v7a
-	cp $(PWD)/baresip/include/baresip.h $(PROJECT_PATH)/distribution/baresip/include
-endif
-
-clean:
-	make distclean -C baresip
-	make distclean -C rem
-	make distclean -C re
-	-make distclean -C openssl
-	-make distclean -C opus
-	-make distclean -C zrtp
-
 .PHONY: toolchain
 toolchain:
 	rm -rf toolchain && \
@@ -163,8 +130,10 @@ openssl:
 
 ifneq ("$(wildcard $(PWD)/openssl/libssl.a)","")
 install-openssl:
-	cp $(PWD)/openssl/libcrypto.a $(PROJECT_PATH)/distribution/openssl/lib/armeabi-v7a
-	cp $(PWD)/openssl/libssl.a $(PROJECT_PATH)/distribution/openssl/lib/armeabi-v7a
+	cp $(PWD)/openssl/libcrypto.a \
+		$(PROJECT_PATH)/distribution/openssl/lib/armeabi-v7a
+	cp $(PWD)/openssl/libssl.a \
+		$(PROJECT_PATH)/distribution/openssl/lib/armeabi-v7a
 endif
 
 .PHONY: opus
@@ -173,7 +142,8 @@ opus:
 		rm -rf include_opus && \
 		CC="$(CC) --sysroot $(SYSROOT)" \
 		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-		./configure --host=$(TARGET) --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
+		./configure --host=$(TARGET) --disable-shared \
+			CFLAGS="$(COMMON_CFLAGS)" && \
 		CC="$(CC) --sysroot $(SYSROOT)" \
 		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
 		make && \
@@ -183,7 +153,8 @@ opus:
 
 ifneq ("$(wildcard $(PWD)/opus/.libs/libopus.a)","")
 install-opus:
-	cp $(PWD)/opus/.libs/libopus.a $(PROJECT_PATH)/distribution/opus/lib/armeabi-v7a
+	cp $(PWD)/opus/.libs/libopus.a \
+		$(PROJECT_PATH)/distribution/opus/lib/armeabi-v7a
 endif
 
 .PHONY: zrtp
@@ -204,10 +175,50 @@ zrtp:
 
 ifneq ("$(wildcard $(PWD)/zrtp/libzrtp.a)","")
 install-zrtp:
-	cp $(PWD)/zrtp/third_party/bnlib/libbn.a $(PROJECT_PATH)/distribution/bn/lib/armeabi-v7a
-	cp $(PWD)/zrtp/libzrtp.a $(PROJECT_PATH)/distribution/zrtp/lib/armeabi-v7a
+	cp $(PWD)/zrtp/third_party/bnlib/libbn.a \
+		$(PROJECT_PATH)/distribution/bn/lib/armeabi-v7a
+	cp $(PWD)/zrtp/libzrtp.a \
+		$(PROJECT_PATH)/distribution/zrtp/lib/armeabi-v7a
 endif
 
-dump:
-	@echo "NDK_PATH = $(NDK_PATH)"
-	@echo "PROJECT_PATH = $(PROJECT_PATH)"
+libre.a: Makefile
+	@rm -f re/libre.*
+	PATH=$(PATH) make $@ -C re $(COMMON_FLAGS)
+
+librem.a:	Makefile libre.a
+	@rm -f rem/librem.*
+	PATH=$(PATH) make $@ -C rem $(COMMON_FLAGS)
+
+libbaresip:	Makefile librem.a libre.a
+	@rm -f baresip/baresip baresip/src/static.c
+	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" \
+	PATH=$(PATH) make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 \
+		LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem \
+	        MOD_AUTODETECT= \
+		EXTRA_MODULES="$(EXTRA_MODULES)"
+
+ifneq ("$(wildcard $(PWD)/baresip/libbaresip.a)","")
+install-libbaresip:
+	cp $(PWD)/re/libre.a \
+		$(PROJECT_PATH)/distribution/re/lib/armeabi-v7a
+	cp $(PWD)/re/include/* \
+		$(PROJECT_PATH)/distribution/re/include
+	cp $(PWD)/rem/librem.a \
+		$(PROJECT_PATH)/distribution/rem/lib/armeabi-v7a
+	cp $(PWD)/rem/include/* \
+		$(PROJECT_PATH)/distribution/rem/include
+	cp $(PWD)/baresip/libbaresip.a \
+		$(PROJECT_PATH)/distribution/baresip/lib/armeabi-v7a
+	cp $(PWD)/baresip/include/baresip.h \
+		$(PROJECT_PATH)/distribution/baresip/include
+endif
+
+install-all: install-openssl install-opus install-zrtp install-libbaresip
+
+clean:
+	make distclean -C baresip
+	make distclean -C rem
+	make distclean -C re
+	-make distclean -C openssl
+	-make distclean -C opus
+	-make distclean -C zrtp
