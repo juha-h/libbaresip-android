@@ -94,3 +94,8 @@ $ make install-opus # optional
 $ make install-zrtp # optional
 $ make install-libbaresip
 ```
+or
+```
+$ make install-all
+```
+
