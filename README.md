@@ -83,7 +83,7 @@ $ make zrtp
 
 ## Step 7 - build libbaresip
 ```
-$ make baresip
+$ make libbaresip
 ```
 
 ## Step 8 - install results to your Android Studio project (optional)
