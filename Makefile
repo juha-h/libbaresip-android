@@ -41,16 +41,13 @@ STRIP	  := $(TARGET)-strip
 # NOTE: use -isystem to avoid warnings in system header files
 COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC
 
-# -D__ANDROID_API__ should not be needed with standalone toolchain
 CFLAGS := $(COMMON_CFLAGS) \
-	-D__ANDROID_API__=$(API_LEVEL) \
 	-I$(PWD)/openssl/include \
 	-I$(PWD)/opus/include_opus \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
-	-march=armv7-a \
-	-target $(TARGET)
+	-march=armv7-a
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/openssl \
