@@ -29,7 +29,7 @@ code there:
 $ git clone https://github.com/alfredh/baresip.git
 $ git clone https://github.com/creytiv/rem.git
 $ git clone https://github.com/creytiv/re.git
-$ wget https://www.openssl.org/source/openssl-1.1.1.tar.gz
+$ git clone https://github.com/openssl/openssl.git
 # Optionally opus and/or zrtp
 $ wget http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz
 $ wget https://github.com/juha-h/libzrtp/archive/master.zip
@@ -40,12 +40,8 @@ $ wget https://github.com/juha-h/libzrtp/archive/master.zip
 Unpack packed source code and create symlinks:
 
 ```
-$ tar zxf openssl-1.1.1.tar.gz
-$ ln -s openssl-1.1.1 openssl
-# If downloaded:
 $ tar zxf opus-1.1.3.tar.gz
 $ ln -s opus-1.1.3 opus
-# If downloaded:
 $ unzip master.zip
 $ ln -s libzrtp-master zrtp
 ```

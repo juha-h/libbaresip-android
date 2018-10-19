@@ -5,8 +5,7 @@
 #
 
 # Paths to your Android SDK/NDK
-#NDK_PATH  := /usr/local/android-ndk-r18b
-NDK_PATH   := /usr/local/Android/Sdk/ndk-bundle
+NDK_PATH  := /usr/local/android-ndk-r18b
 PROJECT_PATH := /usr/src/baresip-studio
 
 # Android API level:
@@ -21,16 +20,14 @@ TARGET    := arm-linux-androideabi
 
 OS        := $(shell uname -s | tr "[A-Z]" "[a-z]")
 HOST_OS   := linux-x86_64
-
-# NDK tools
-SYSROOT   := $(NDK_PATH)/platforms/$(PLATFORM)/arch-arm
-SYSROOT_INC   := $(NDK_PATH)/sysroot
-BIN       := $(NDK_PATH)/toolchains/$(TARGET)-4.9/prebuilt/$(HOST_OS)/bin
-CLANG_BIN := $(NDK_PATH)/toolchains/llvm/prebuilt/$(HOST_OS)/bin
 PWD       := $(shell pwd)
 
+# Toolchain and sysroot
+TOOLCHAIN := $(PWD)/toolchain
+SYSROOT   := $(TOOLCHAIN)/sysroot
+
 # Toolchain tools
-PATH	  := $(PWD)/toolchain/bin:/usr/bin:/bin
+PATH	  := $(TOOLCHAIN)/bin:/usr/bin:/bin
 AR	  := $(TARGET)-ar
 AS	  := $(TARGET)-clang
 CC	  := $(TARGET)-clang
@@ -38,12 +35,10 @@ CXX	  := $(TARGET)-clang++
 LD	  := $(TARGET)-ld
 STRIP	  := $(TARGET)-strip
 
-# Compiler and Linker Flags
+# Compiler and Linker Flags for re, rem, and baresip
 #
 # NOTE: use -isystem to avoid warnings in system header files
-COMMON_CFLAGS := -isystem $(SYSROOT_INC)/usr/include/ \
-	-isystem $(SYSROOT_INC)/usr/include/$(TARGET) \
-	-fPIE -fPIC \
+COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC
 
 CFLAGS := $(COMMON_CFLAGS) \
 	-D__ANDROID_API__=$(API_LEVEL) \
@@ -61,7 +56,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
 	-fPIE -pie \
-	--sysroot=$(NDK_PATH)/platforms/$(PLATFORM)/arch-arm
+	--sysroot=$(SYSROOT)
 
 COMMON_FLAGS := CC=$(CC) \
 	CXX=$(CXX) \
@@ -70,8 +65,7 @@ COMMON_FLAGS := CC=$(CC) \
 	EXTRA_CFLAGS="$(CFLAGS) -DANDROID" \
 	EXTRA_CXXFLAGS="$(CFLAGS) -DANDROID" \
 	EXTRA_LFLAGS="$(LFLAGS)" \
-	SYSROOT=$(SYSROOT_INC)/usr \
-	SYSROOT_ALT=$(SYSROOT)/usr \
+	SYSROOT=$(SYSROOT)/usr \
 	HAVE_INTTYPES_H=1 \
 	HAVE_GETOPT=1 \
 	HAVE_LIBRESOLV= \
@@ -103,29 +97,16 @@ default:	libbaresip
 
 .PHONY: toolchain
 toolchain:
-	rm -rf toolchain && \
+	rm -rf $(TOOLCHAIN) && \
 	$(NDK_PATH)/build/tools/make_standalone_toolchain.py --arch arm \
-	--api $(API_LEVEL) --install-dir ./toolchain
-
-# OPENSSL does not support standalone toolchains
-OPENSSL_FLAGS := \
-	no-shared \
-	-D__ANDROID_API__=$(API_LEVEL) \
-	-I$(SYSROOT_INC)/usr/include \
-	-I$(SYSROOT_INC)/usr/include/$(TARGET)
+		--api $(API_LEVEL) --install-dir $(TOOLCHAIN)
 
 .PHONY: openssl
 openssl:
 	cd openssl && \
-		CC=clang RANLIB=$(BIN)/$(TARGET)-ranlib \
-		AR=$(BIN)/$(TARGET)-ar \
-		ANDROID_NDK=$(NDK_PATH) \
-		PATH=$(CLANG_BIN):$(BIN):/usr/bin:/bin \
-		./Configure android-arm $(OPENSSL_FLAGS) && \
-		CC=clang RANLIB=$(BIN)/$(TARGET)-ranlib \
-		AR=$(BIN)/$(TARGET)-ar \
-		ANDROID_NDK=$(NDK_PATH) \
-		PATH=$(CLANG_BIN):$(BIN):/usr/bin:/bin \
+		CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
+		./Configure android-arm no-shared $(OPENSSL_FLAGS) && \
+		CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
 		make build_libs
 
 ifneq ("$(wildcard $(PWD)/openssl/libssl.a)","")
