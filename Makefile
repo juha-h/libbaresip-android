@@ -6,6 +6,7 @@
 
 # Paths to your Android SDK/NDK
 NDK_PATH  := /usr/local/android-ndk-r18b
+#NDK_PATH   := /usr/local/Android/Sdk/ndk-bundle
 PROJECT_PATH := /usr/src/baresip-studio
 
 # Android API level:
@@ -40,6 +41,7 @@ STRIP	  := $(TARGET)-strip
 # NOTE: use -isystem to avoid warnings in system header files
 COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC
 
+# -D__ANDROID_API__ should not be needed with standalone toolchain
 CFLAGS := $(COMMON_CFLAGS) \
 	-D__ANDROID_API__=$(API_LEVEL) \
 	-I$(PWD)/openssl/include \
@@ -55,13 +57,9 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/opus/.libs \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
-	-fPIE -pie \
-	--sysroot=$(SYSROOT)
+	-fPIE -pie
 
-COMMON_FLAGS := CC=$(CC) \
-	CXX=$(CXX) \
-	RANLIB=$(RANLIB) \
-	AR=$(AR) \
+COMMON_FLAGS := \
 	EXTRA_CFLAGS="$(CFLAGS) -DANDROID" \
 	EXTRA_CXXFLAGS="$(CFLAGS) -DANDROID" \
 	EXTRA_LFLAGS="$(LFLAGS)" \
@@ -104,10 +102,10 @@ toolchain:
 .PHONY: openssl
 openssl:
 	cd openssl && \
-		CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
-		./Configure android-arm no-shared $(OPENSSL_FLAGS) && \
-		CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
-		make build_libs
+	CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
+	./Configure android-arm no-shared $(OPENSSL_FLAGS) && \
+	CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
+	make build_libs
 
 ifneq ("$(wildcard $(PWD)/openssl/libssl.a)","")
 install-openssl:
@@ -120,17 +118,17 @@ endif
 .PHONY: opus
 opus:
 	cd opus && \
-		rm -rf include_opus && \
-		CC="$(CC) --sysroot $(SYSROOT)" \
-		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-		./configure --host=$(TARGET) --disable-shared \
-			CFLAGS="$(COMMON_CFLAGS)" && \
-		CC="$(CC) --sysroot $(SYSROOT)" \
-		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-		make && \
-		mkdir include_opus && \
-		mkdir include_opus/opus && \
-		cp include/* include_opus/opus
+	rm -rf include_opus && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	./configure --host=$(TARGET) --disable-shared \
+		CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make && \
+	mkdir include_opus && \
+	mkdir include_opus/opus && \
+	cp include/* include_opus/opus
 
 ifneq ("$(wildcard $(PWD)/opus/.libs/libopus.a)","")
 install-opus:
@@ -141,18 +139,18 @@ endif
 .PHONY: zrtp
 zrtp:
 	cd zrtp && \
-		./bootstrap.sh && \
-		CC="$(CC) --sysroot $(SYSROOT)" \
-		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-		./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
-		cd third_party/bnlib/ && \
-		CC="$(CC) --sysroot $(SYSROOT)" \
-		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-		./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
-		cd ../.. && \
-		CC="$(CC) --sysroot $(SYSROOT)" \
-		RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-		make
+	./bootstrap.sh && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
+	cd third_party/bnlib/ && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
+	cd ../.. && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make
 
 ifneq ("$(wildcard $(PWD)/zrtp/libzrtp.a)","")
 install-zrtp:
@@ -164,19 +162,21 @@ endif
 
 libre.a: Makefile
 	@rm -f re/libre.*
-	PATH=$(PATH) make $@ -C re $(COMMON_FLAGS)
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
+	make $@ -C re $(COMMON_FLAGS)
 
 librem.a:	Makefile libre.a
 	@rm -f rem/librem.*
-	PATH=$(PATH) make $@ -C rem $(COMMON_FLAGS)
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
+	make $@ -C rem $(COMMON_FLAGS)
 
 libbaresip:	Makefile librem.a libre.a
 	@rm -f baresip/baresip baresip/src/static.c
 	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" \
-	PATH=$(PATH) make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 \
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
+	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 \
 		LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem \
-	        MOD_AUTODETECT= \
-		EXTRA_MODULES="$(EXTRA_MODULES)"
+	        MOD_AUTODETECT= EXTRA_MODULES="$(EXTRA_MODULES)"
 
 ifneq ("$(wildcard $(PWD)/baresip/libbaresip.a)","")
 install-libbaresip:
