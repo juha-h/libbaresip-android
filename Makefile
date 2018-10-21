@@ -88,6 +88,8 @@ ifneq ("$(wildcard $(PWD)/zrtp)","")
 	EXTRA_MODULES := $(EXTRA_MODULES) zrtp
 endif
 
+all:	toolchain openssl opus zrtp libbaresip
+
 default:	libbaresip
 
 .PHONY: toolchain
@@ -192,6 +194,20 @@ install-libbaresip:
 endif
 
 install-all: install-openssl install-opus install-zrtp install-libbaresip
+
+download-sources:
+	rm -fr baresip re rem openssl opus* master.zip libzrtp-master zrtp
+	git clone https://github.com/alfredh/baresip.git
+	git clone https://github.com/creytiv/rem.git
+	git clone https://github.com/creytiv/re.git
+	git clone https://github.com/openssl/openssl.git
+	wget http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz
+	wget https://github.com/juha-h/libzrtp/archive/master.zip
+	tar zxf opus-1.1.3.tar.gz
+	ln -s opus-1.1.3 opus
+	unzip master.zip
+	ln -s libzrtp-master zrtp
+	patch -p0 < reg.c-patch
 
 clean:
 	make distclean -C baresip
