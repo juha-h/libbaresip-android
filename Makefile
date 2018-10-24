@@ -4,7 +4,7 @@
 # Copyright (C) 2014 Creytiv.com and 2018 TutPro Inc.
 #
 
-# Paths to your Android SDK/NDK
+# Path to your Android NDK
 NDK_PATH  := /usr/local/android-ndk-r18b
 #NDK_PATH   := /usr/local/Android/Sdk/ndk-bundle
 
