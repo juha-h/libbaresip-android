@@ -7,6 +7,8 @@
 # Paths to your Android SDK/NDK
 NDK_PATH  := /usr/local/android-ndk-r18b
 #NDK_PATH   := /usr/local/Android/Sdk/ndk-bundle
+
+# Path to your Android Studio project (if any)
 PROJECT_PATH := /usr/src/baresip-studio
 
 # Android API level:
@@ -34,6 +36,7 @@ AS	  := $(TARGET)-clang
 CC	  := $(TARGET)-clang
 CXX	  := $(TARGET)-clang++
 LD	  := $(TARGET)-ld
+RANLIB	  := $(TARGET)-ranlib
 STRIP	  := $(TARGET)-strip
 
 # Compiler and Linker Flags for re, rem, and baresip
@@ -158,6 +161,22 @@ install-zrtp:
 	cp $(PWD)/zrtp/libzrtp.a \
 		$(PROJECT_PATH)/distribution/zrtp/lib/armeabi-v7a
 endif
+
+# gzrtp for possible future use
+.PHONY: gzrtp
+gzrtp:
+	cd ZRTPCPP && \
+	rm -rf build && \
+	mkdir build && \
+	cd build && \
+	CC="$(CC) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
+	CXX="$(CXX) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	cmake -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DCORE_LIB=1 -DSDES=1 -DBUILD_STATIC=1 -DANDROID=1 .. && \
+	CC="$(CC) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
+	CXX="$(CXX) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make
 
 libre.a: Makefile
 	@rm -f re/libre.*
