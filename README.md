@@ -21,6 +21,9 @@ https://developer.android.com/ndk/downloads/
 ```
 or use ndk-bundle that comes with Andoid SDK.
 
+and, if needed, adjust Makefile variables NDK_PATH, STUDIO_PATH
+(optional path to your Android Studio project), and API_LEVEL.
+
 ## Step 1 - download source code
 
 Create a directory for libbaresip-android and download the source
@@ -55,34 +58,29 @@ After that you should have a layout like this:
     zrtp/ (optional)
 ```
 
-## Step 3 - adjust Makefile variables
-
-If needed, adjust Makefile variables NDK_PATH, STUDIO_PATH (optional
-path to your Android Studio project), and API_LEVEL.
-
-## Step 4 - create standalone toolchain
+## Step 3 - create standalone toolchain
 ```
 $ make toolchain
 ```
 
-## Step 5 - build openssl
+## Step 4 - build openssl
 ```
 $ make openssl
 ```
 
-## Step 6 - build opus (optional) and zrtp (optional)
+## Step 5 - build opus (optional) and zrtp (optional)
 
 ```
 $ make opus
 $ make zrtp
 ```
 
-## Step 7 - build libbaresip
+## Step 6 - build libbaresip
 ```
 $ make libbaresip
 ```
 
-## Step 8 - install results to your Android Studio project (optional)
+## Step 7 - install results to your Android Studio project (optional)
 
 ```
 $ make install-openssl
@@ -90,8 +88,10 @@ $ make install-opus # optional
 $ make install-zrtp # optional
 $ make install-libbaresip
 ```
-or
+
+Alternatively, instead of individual Steps 1-7, after Step 0:
 ```
+$ make download-sources
+$ make all
 $ make install-all
 ```
-
