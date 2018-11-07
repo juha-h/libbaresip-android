@@ -21,7 +21,7 @@ https://developer.android.com/ndk/downloads/
 ```
 or use ndk-bundle that comes with Andoid SDK.
 
-and, if needed, adjust Makefile variables NDK_PATH, STUDIO_PATH
+If needed, adjust Makefile variables NDK_PATH, STUDIO_PATH
 (optional path to your Android Studio project), and API_LEVEL.
 
 ## Step 1 - download source code
