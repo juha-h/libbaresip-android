@@ -21,13 +21,19 @@ https://developer.android.com/ndk/downloads/
 ```
 or use ndk-bundle that comes with Andoid SDK.
 
-If needed, adjust Makefile variables NDK_PATH, STUDIO_PATH
-(optional path to your Android Studio project), and API_LEVEL.
+## Step 1 - clone libbaresip-android
 
-## Step 1 - download source code
+Clone libbaresip-android repository:
+```
+$ git clone https://github.com/juha-g/libbaresip-android.git
+```
+This creates libbaresip-android directory containing Makefile.  
+If needed, adjust Makefile variables NDK_PATH, API_LEVEL, and
+STUDIO_PATH (optional path to your Android Studio project).
 
-Create a directory for libbaresip-android and download the source
-code there:
+## Step 2 - download source code
+
+Download source code in directory you created for libbaresip-android:
 ```
 $ git clone https://github.com/alfredh/baresip.git
 $ git clone https://github.com/creytiv/rem.git
@@ -38,7 +44,7 @@ $ wget http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz
 $ wget https://github.com/juha-h/libzrtp/archive/master.zip
 ```
 
-## Step 2 - unpack source code
+## Step 3 - unpack source code
 
 Unpack packed source code and create symlinks:
 
@@ -48,7 +54,8 @@ $ ln -s opus-1.1.3 opus
 $ unzip master.zip
 $ ln -s libzrtp-master zrtp
 ```
-After that you should have a layout like this:
+After that you should have in libbaresip-android directory a layout like
+this:
 ```
     baresip/
     openssl/
@@ -58,29 +65,29 @@ After that you should have a layout like this:
     zrtp/ (optional)
 ```
 
-## Step 3 - create standalone toolchain
+## Step 4 - create standalone toolchain
 ```
 $ make toolchain
 ```
 
-## Step 4 - build openssl
+## Step 5 - build openssl
 ```
 $ make openssl
 ```
 
-## Step 5 - build opus (optional) and zrtp (optional)
+## Step 6 - build opus (optional) and zrtp (optional)
 
 ```
 $ make opus
 $ make zrtp
 ```
 
-## Step 6 - build libbaresip
+## Step 7 - build libbaresip
 ```
 $ make libbaresip
 ```
 
-## Step 7 - install results to your Android Studio project (optional)
+## Step 8 - install results to your Android Studio project (optional)
 
 ```
 $ make install-openssl
@@ -89,9 +96,10 @@ $ make install-zrtp # optional
 $ make install-libbaresip
 ```
 
-Alternatively, instead of individual Steps 1-7, after Step 0:
+Alternatively, instead of steps 2-8, after Steps 0 and 1:
 ```
 $ make download-sources
 $ make all
 $ make install-all
 ```
+This will also patch reg.c as needed by baresip-studio project.
