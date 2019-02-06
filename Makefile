@@ -79,7 +79,8 @@ COMMON_FLAGS := \
 	USE_OPENSSL=yes \
 	USE_OPENSSL_DTLS=yes \
 	USE_OPENSSL_SRTP=yes \
-	ANDROID=yes
+	ANDROID=yes \
+	RELEASE=1
 
 EXTRA_MODULES := g711 stdio opensles dtls_srtp echo aubridge
 
