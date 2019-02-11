@@ -2,15 +2,15 @@ libbaresip-android
 ==================
 
 This project shows how to build libbaresip for Android using Android NDK
-r18 or later that only support clang.  Resulting libbaresip can be used
-in Baresip based Android applications.
+r19 or later that only support clang.  Resulting libbaresip can be used
+in Baresip based Android (Studio) applications.
 
 Currently supported NDKs:
 
 | NDK  | Supported  |
 |------|------------|
-| r18  | Yes        |
-| r17  | No         |
+| r19  | Yes        |
+| r18  | No         |
 | ...  | No         |
 
 ## Step 0 - download Android NDK
@@ -27,33 +27,21 @@ Clone libbaresip-android repository:
 ```
 $ git clone https://github.com/juha-g/libbaresip-android.git
 ```
-This creates libbaresip-android directory containing Makefile.  
-If needed, adjust Makefile variables NDK_PATH, API_LEVEL, and
-STUDIO_PATH (optional path to your Android Studio project).
+This creates libbaresip-android directory containing Makefile.
 
-## Step 2 - download source code
+## Step 2 - edit Makefile
 
-Download source code in directory you created for libbaresip-android:
+Go to ./libbaresip-android directory and edit Makefile. You need to set
+(or check) the variables listed in VALUES TO CONFIGURE section.
+
+## Step 3 - download source code
+
+Download source code to ./libbaresip-android directory:
 ```
-$ git clone https://github.com/alfredh/baresip.git
-$ git clone https://github.com/creytiv/rem.git
-$ git clone https://github.com/creytiv/re.git
-$ git clone https://github.com/openssl/openssl.git
-# Optionally opus and/or zrtp
-$ wget http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz
-$ wget https://github.com/juha-h/libzrtp/archive/master.zip
+$ make download-sources
 ```
+This will also patch reg.c as needed by baresip-studio project.
 
-## Step 3 - unpack source code
-
-Unpack packed source code and create symlinks:
-
-```
-$ tar zxf opus-1.1.3.tar.gz
-$ ln -s opus-1.1.3 opus
-$ unzip master.zip
-$ ln -s libzrtp-master zrtp
-```
 After that you should have in libbaresip-android directory a layout like
 this:
 ```
@@ -61,45 +49,21 @@ this:
     openssl/
     re/
     rem/
-    opus/ (optional)
-    zrtp/ (optional)
+    opus/
+    zrtp/
 ```
 
-## Step 4 - create standalone toolchain
-```
-$ make toolchain
-```
+## Step 4 - build and install libraries
 
-## Step 5 - build openssl
+You can build and install the libraries only for a selected architecture
+with command:
 ```
-$ make openssl
+$ make install ANDROID_TARGET_ARCH=$ARCH
 ```
+by replacing $ARCH with armeabi-v7a or arm64-v8a.
 
-## Step 6 - build opus (optional) and zrtp (optional)
-
+Or you can build and install the libraries for all architectures with
+command:
 ```
-$ make opus
-$ make zrtp
-```
-
-## Step 7 - build libbaresip
-```
-$ make libbaresip
-```
-
-## Step 8 - install results to your Android Studio project (optional)
-
-```
-$ make install-openssl
-$ make install-opus # optional
-$ make install-zrtp # optional
-$ make install-libbaresip
-```
-
-Alternatively, instead of steps 2-8, after Steps 0 and 1:
-```
-$ make download-sources
-$ make all
 $ make install-all
 ```
-This will also patch reg.c as needed by baresip-studio project.

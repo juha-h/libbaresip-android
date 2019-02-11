@@ -1,43 +1,53 @@
-#
-# Makefile
-#
-# Copyright (C) 2014 Creytiv.com and 2018 TutPro Inc.
-#
+# -------------------- VALUES TO CONFIGURE --------------------
 
-# Path to your Android NDK
-NDK_PATH  := /usr/local/android-ndk-r18b
-#NDK_PATH   := /usr/local/Android/Sdk/ndk-bundle
+# Path to your Android NDK (must be r19 or higher)
+NDK_PATH  :=  /usr/local/Android/Sdk/ndk-bundle
+#NDK_PATH  :=  /usr/local/android-ndk-r19
 
-# Path to your Android Studio project (if any)
-PROJECT_PATH := /usr/src/baresip-studio
-
-# Android API level:
+# Android API level
 API_LEVEL := 21
 
-PLATFORM  := android-$(API_LEVEL)
+# Set default from following values: [armeabi-v7a, arm64-v8a]
+ANDROID_TARGET_ARCH := armeabi-v7a
 
-#
-# Target architecture
-#
-TARGET    := arm-linux-androideabi
+# Directory where libraries and include files are instelled
+OUTPUT_DIR := /usr/src/baresip-studio/distribution
 
-OS        := $(shell uname -s | tr "[A-Z]" "[a-z]")
-HOST_OS   := linux-x86_64
-PWD       := $(shell pwd)
+# -------------------- GENERATED VALUES --------------------
+
+ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
+	TARGET       := arm-linux-androideabi
+	CLANG_TARGET := armv7a-linux-androideabi
+	ARCH         := arm
+	OPENSSL_ARCH := android-arm
+	MARCH        := armv7-a
+else
+	TARGET       := aarch64-linux-android
+	CLANG_TARGET := $(TARGET)
+	ARCH         := arm
+	OPENSSL_ARCH := android-arm64
+	MARCH        := armv8-a
+endif
+
+PLATFORM	:= android-$(API_LEVEL)
+OS		    := $(shell uname -s | tr "[A-Z]" "[a-z]")
+HOST_OS		:= linux-x86_64
+
+PWD		:= $(shell pwd)
 
 # Toolchain and sysroot
-TOOLCHAIN := $(PWD)/toolchain
-SYSROOT   := $(TOOLCHAIN)/sysroot
+TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/linux-x86_64
+SYSROOT		:= $(TOOLCHAIN)/sysroot
 
 # Toolchain tools
-PATH	  := $(TOOLCHAIN)/bin:/usr/bin:/bin
-AR	  := $(TARGET)-ar
-AS	  := $(TARGET)-clang
-CC	  := $(TARGET)-clang
-CXX	  := $(TARGET)-clang++
-LD	  := $(TARGET)-ld
-RANLIB	  := $(TARGET)-ranlib
-STRIP	  := $(TARGET)-strip
+PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
+AR	:= $(TARGET)-ar
+AS	:= $(CLANG_TARGET)$(API_LEVEL)-clang
+CC	:= $(CLANG_TARGET)$(API_LEVEL)-clang
+CXX	:= $(CLANG_TARGET)$(API_LEVEL)-clang++
+LD	:= $(TARGET)-ld
+RANLIB	:= $(TARGET)-ranlib
+STRIP	:= $(TARGET)-strip
 
 # Compiler and Linker Flags for re, rem, and baresip
 #
@@ -50,7 +60,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
-	-march=armv7-a
+	-march=$(MARCH)
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/openssl \
@@ -75,72 +85,57 @@ COMMON_FLAGS := \
 	HAVE_INET6=1 \
 	HAVE_GETIFADDRS= \
 	PEDANTIC= \
-	OS=$(OS) ARCH=arm \
+	OS=$(OS) \
+	ARCH=$(ARCH) \
 	USE_OPENSSL=yes \
 	USE_OPENSSL_DTLS=yes \
 	USE_OPENSSL_SRTP=yes \
 	ANDROID=yes \
 	RELEASE=1
 
-EXTRA_MODULES := g711 stdio opensles dtls_srtp echo aubridge
+OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-ifneq ("$(wildcard $(PWD)/opus)","")
-	EXTRA_MODULES := $(EXTRA_MODULES) opus
-endif
+EXTRA_MODULES := g711 stdio opensles dtls_srtp echo aubridge opus zrtp
 
-ifneq ("$(wildcard $(PWD)/zrtp)","")
-	EXTRA_MODULES := $(EXTRA_MODULES) zrtp
-endif
-
-all:	toolchain openssl opus zrtp libbaresip
-
-default:	libbaresip
-
-.PHONY: toolchain
-toolchain:
-	rm -rf $(TOOLCHAIN) && \
-	$(NDK_PATH)/build/tools/make_standalone_toolchain.py --arch arm \
-		--api $(API_LEVEL) --install-dir $(TOOLCHAIN)
+default:
+	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
 
 .PHONY: openssl
 openssl:
+	-make distclean -C openssl
 	cd openssl && \
-	CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
-	./Configure android-arm no-shared $(OPENSSL_FLAGS) && \
-	CC=clang ANDROID_NDK=$(TOOLCHAIN) PATH=$(PATH) \
-	make build_libs
+	CC=clang ANDROID_NDK=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared $(OPENSSL_FLAGS) && \
+	CC=clang ANDROID_NDK=$(NDK_PATH) PATH=$(PATH) make build_libs
 
-ifneq ("$(wildcard $(PWD)/openssl/libssl.a)","")
-install-openssl:
-	cp $(PWD)/openssl/libcrypto.a \
-		$(PROJECT_PATH)/distribution/openssl/lib/armeabi-v7a
-	cp $(PWD)/openssl/libssl.a \
-		$(PROJECT_PATH)/distribution/openssl/lib/armeabi-v7a
-endif
+.PHONY: install-openssl
+install-openssl: openssl
+	rm -rf $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
+	cp openssl/libcrypto.a \
+		$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
+	cp openssl/libssl.a \
+		$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: opus
 opus:
+	-make distclean -C opus
 	cd opus && \
 	rm -rf include_opus && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	./configure --host=$(TARGET) --disable-shared \
-		CFLAGS="$(COMMON_CFLAGS)" && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	mkdir include_opus && \
 	mkdir include_opus/opus && \
 	cp include/* include_opus/opus
 
-ifneq ("$(wildcard $(PWD)/opus/.libs/libopus.a)","")
-install-opus:
-	cp $(PWD)/opus/.libs/libopus.a \
-		$(PROJECT_PATH)/distribution/opus/lib/armeabi-v7a
-endif
+.PHONY: install-opus
+install-opus: opus
+	rm -rf $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
+	cp opus/.libs/libopus.a $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: zrtp
 zrtp:
+	-make distclean -C zrtp
 	cd zrtp && \
 	./bootstrap.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
@@ -155,66 +150,54 @@ zrtp:
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
 	make
 
-ifneq ("$(wildcard $(PWD)/zrtp/libzrtp.a)","")
-install-zrtp:
-	cp $(PWD)/zrtp/third_party/bnlib/libbn.a \
-		$(PROJECT_PATH)/distribution/bn/lib/armeabi-v7a
-	cp $(PWD)/zrtp/libzrtp.a \
-		$(PROJECT_PATH)/distribution/zrtp/lib/armeabi-v7a
-endif
-
-# gzrtp for possible future use
-.PHONY: gzrtp
-gzrtp:
-	cd ZRTPCPP && \
-	rm -rf build && \
-	mkdir build && \
-	cd build && \
-	CC="$(CC) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
-	CXX="$(CXX) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	cmake -DCMAKE_POSITION_INDEPENDENT_CODE=1 -DCORE_LIB=1 -DSDES=1 -DBUILD_STATIC=1 -DANDROID=1 .. && \
-	CC="$(CC) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
-	CXX="$(CXX) --sysroot $(SYSROOT) $(COMMON_CFLAGS)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make
+install-zrtp: zrtp
+	rm -rf $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
+	cp zrtp/third_party/bnlib/libbn.a $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
+	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
-	@rm -f re/libre.*
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
-	make $@ -C re $(COMMON_FLAGS)
+	make distclean -C re
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C re $(COMMON_FLAGS)
 
-librem.a:	Makefile libre.a
-	@rm -f rem/librem.*
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
-	make $@ -C rem $(COMMON_FLAGS)
+librem.a: Makefile libre.a
+	make distclean -C rem
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip:	Makefile librem.a libre.a
-	@rm -f baresip/baresip baresip/src/static.c
-	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" \
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
-	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 \
-		LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem \
-	        MOD_AUTODETECT= EXTRA_MODULES="$(EXTRA_MODULES)"
+libbaresip: Makefile openssl opus zrtp librem.a libre.a
+	make distclean -C baresip
+	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
+	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= EXTRA_MODULES="$(EXTRA_MODULES)"
 
-ifneq ("$(wildcard $(PWD)/baresip/libbaresip.a)","")
-install-libbaresip:
-	cp $(PWD)/re/libre.a \
-		$(PROJECT_PATH)/distribution/re/lib/armeabi-v7a
-	cp $(PWD)/re/include/* \
-		$(PROJECT_PATH)/distribution/re/include
-	cp $(PWD)/rem/librem.a \
-		$(PROJECT_PATH)/distribution/rem/lib/armeabi-v7a
-	cp $(PWD)/rem/include/* \
-		$(PROJECT_PATH)/distribution/rem/include
-	cp $(PWD)/baresip/libbaresip.a \
-		$(PROJECT_PATH)/distribution/baresip/lib/armeabi-v7a
-	cp $(PWD)/baresip/include/baresip.h \
-		$(PROJECT_PATH)/distribution/baresip/include
-endif
+install-libbaresip: Makefile libbaresip
+	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
+	cp re/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
+	cp rem/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
+	cp baresip/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/re/include
+	mkdir -p $(OUTPUT_DIR)/re/include
+	cp re/include/* $(OUTPUT_DIR)/re/include
+	rm -rf $(OUTPUT_DIR)/rem/include
+	mkdir $(OUTPUT_DIR)/rem/include
+	cp rem/include/* $(OUTPUT_DIR)/rem/include
+	rm -rf $(OUTPUT_DIR)/baresip/include
+	mkdir $(OUTPUT_DIR)/baresip/include
+	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install-all: install-openssl install-opus install-zrtp install-libbaresip
+install: install-openssl install-opus install-zrtp install-libbaresip
 
+install-all:
+	make install ANDROID_TARGET_ARCH=armeabi-v7a
+	make install ANDROID_TARGET_ARCH=arm64-v8a
+
+.PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* master.zip libzrtp-master zrtp
 	git clone https://github.com/alfredh/baresip.git
@@ -222,11 +205,12 @@ download-sources:
 	git clone https://github.com/creytiv/re.git
 	git clone https://github.com/openssl/openssl.git
 	wget http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz
-	wget https://github.com/juha-h/libzrtp/archive/master.zip
 	tar zxf opus-1.1.3.tar.gz
-	ln -s opus-1.1.3 opus
+	rm opus-1.1.3.tar.gz
+	mv opus-1.1.3 opus
+	wget https://github.com/juha-h/libzrtp/archive/master.zip
 	unzip master.zip
-	ln -s libzrtp-master zrtp
+	ln -s libzrtp-master zrtp    
 	patch -p0 < reg.c-patch
 
 clean:
