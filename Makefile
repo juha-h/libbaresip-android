@@ -95,7 +95,9 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES := g711 stdio opensles dtls_srtp echo aubridge opus zrtp
+EXTRA_MODULES := g711 opensles dtls_srtp opus zrtp \
+	stun turn ice presence contact mwi account natpmp \
+	srtp uuid debug_cmd
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -169,7 +171,7 @@ librem.a: Makefile libre.a
 libbaresip: Makefile openssl opus zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
-	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= EXTRA_MODULES="$(EXTRA_MODULES)"
+	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
