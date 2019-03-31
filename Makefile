@@ -39,6 +39,7 @@ PWD		:= $(shell pwd)
 # Toolchain and sysroot
 TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/linux-x86_64
 SYSROOT		:= $(TOOLCHAIN)/sysroot
+PKG_CONFIG_LIBDIR := $(NDK_PATH)/prebuilt/linux-x86_64/lib/pkgconfig
 
 # Toolchain tools
 PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
@@ -97,7 +98,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES := g711 opensles dtls_srtp opus zrtp avcodec \
+EXTRA_MODULES := g711 opensles opengles dtls_srtp opus zrtp avcodec \
 	stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
@@ -197,7 +198,7 @@ librem.a: Makefile libre.a
 
 libbaresip: Makefile openssl opus zrtp ffmpeg librem.a libre.a
 	make distclean -C baresip
-	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
+	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
 
 install-libbaresip: Makefile libbaresip
