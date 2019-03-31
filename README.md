@@ -40,7 +40,8 @@ Download source code to ./libbaresip-android directory:
 ```
 $ make download-sources
 ```
-This will also patch reg.c as needed by baresip-studio project.
+This will also patch re/src/sipreg/reg.c as needed by baresip-studio
+project as well as ffmeg/libavdevice/v4l2.c.
 
 After that you should have in libbaresip-android directory a layout like
 this:
@@ -51,6 +52,7 @@ this:
     rem/
     opus/
     zrtp/
+    ffmpeg/
 ```
 
 ## Step 4 - build and install libraries

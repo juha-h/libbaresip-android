@@ -1,8 +1,7 @@
 # -------------------- VALUES TO CONFIGURE --------------------
 
 # Path to your Android NDK (must be r19 or higher)
-NDK_PATH  :=  /usr/local/Android/Sdk/ndk-bundle
-#NDK_PATH  :=  /usr/local/android-ndk-r19
+NDK_PATH  :=  /opt/Android/Sdk/ndk-bundle
 
 # Android API level
 API_LEVEL := 21
@@ -20,12 +19,14 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	CLANG_TARGET := armv7a-linux-androideabi
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm
+	FFMPEG_ARCH  := arm
 	MARCH        := armv7-a
 else
 	TARGET       := aarch64-linux-android
 	CLANG_TARGET := $(TARGET)
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm64
+	FFMPEG_ARCH  := aarch64
 	MARCH        := armv8-a
 endif
 
@@ -60,6 +61,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
+	-I$(PWD)/ffmpeg \
 	-march=$(MARCH)
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
@@ -95,7 +97,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES := g711 opensles dtls_srtp opus zrtp \
+EXTRA_MODULES := g711 opensles dtls_srtp opus zrtp avcodec \
 	stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
@@ -160,6 +162,31 @@ install-zrtp: zrtp
 	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: ffmpeg
+ffmpeg:
+	-make distclean -C ffmpeg
+	cd ffmpeg && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	PREFIX=$(PWD)/android/arm \
+	./configure \
+	--target-os=android \
+	--arch=$(FFMPEG_ARCH) \
+	--enable-cross-compile \
+	--cc=$(CC) \
+	--strip=$(STRIP) \
+	--enable-decoder=hevc && \
+	CC="$(CC) --sysroot $(SYSROOT) --extra-cflags=-fno-integrated-as" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make -j4
+
+install-ffmpeg: ffmpeg
+	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavcodec/libavcodec.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavutil/libavutil.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+
 libre.a: Makefile
 	make distclean -C re
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C re $(COMMON_FLAGS)
@@ -168,7 +195,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus zrtp librem.a libre.a
+libbaresip: Makefile openssl opus zrtp ffmpeg librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR="$(SYSROOT)/usr/lib/pkgconfig" PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -193,7 +220,8 @@ install-libbaresip: Makefile libbaresip
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install: install-openssl install-opus install-zrtp install-libbaresip
+install: install-openssl install-opus install-zrtp install-ffmpeg \
+	install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
@@ -201,7 +229,8 @@ install-all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re rem openssl opus* master.zip libzrtp-master zrtp
+	rm -fr baresip re rem openssl opus* master.zip libzrtp-master zrtp \
+	ffmpeg*
 	git clone https://github.com/alfredh/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
@@ -213,6 +242,10 @@ download-sources:
 	wget https://github.com/juha-h/libzrtp/archive/master.zip
 	unzip master.zip
 	ln -s libzrtp-master zrtp    
+	wget https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2
+	tar jxf ffmpeg-4.1.tar.bz2
+	ln -s ffmpeg-4.1 ffmpeg
+	patch -p1 < v4l2.c-patch
 	patch -p0 < reg.c-patch
 
 clean:
