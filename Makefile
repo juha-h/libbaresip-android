@@ -256,3 +256,4 @@ clean:
 	-make distclean -C openssl
 	-make distclean -C opus
 	-make distclean -C zrtp
+	-make distclean -C ffmpeg
