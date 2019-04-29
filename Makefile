@@ -1,8 +1,8 @@
 # -------------------- VALUES TO CONFIGURE --------------------
 
 # Path to your Android NDK (must be r19 or higher)
-NDK_PATH  :=  /usr/local/Android/Sdk/ndk-bundle
-#NDK_PATH  :=  /usr/local/android-ndk-r19
+# Only tested with the one that is included in Android Sdk
+NDK_PATH  :=  /opt/Android/Sdk/ndk-bundle
 
 # Android API level
 API_LEVEL := 21
