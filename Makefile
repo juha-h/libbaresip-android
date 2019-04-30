@@ -207,10 +207,11 @@ download-sources:
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
 	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable --single-branch openssl
-	wget http://downloads.xiph.org/releases/opus/opus-1.1.3.tar.gz
-	tar zxf opus-1.1.3.tar.gz
-	rm opus-1.1.3.tar.gz
-	mv opus-1.1.3 opus
+	wget http://downloads.xiph.org/releases/opus/opus-1.3.1.tar.gz
+	tar zxf opus-1.3.1.tar.gz
+	rm opus-1.3.1.tar.gz
+	mv opus-1.3.1 opus
+	git clone https://git.xiph.org/opus.git -b v1.3.1 --single-branch opus
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -p0 < reg.c-patch
 
