@@ -211,7 +211,6 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://git.xiph.org/opus.git -b v1.3.1 --single-branch opus
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -p0 < reg.c-patch
 
