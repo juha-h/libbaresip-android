@@ -8,7 +8,7 @@ NDK_PATH  :=  /opt/Android/Sdk/ndk-bundle
 API_LEVEL := 21
 
 # Set default from following values: [armeabi-v7a, arm64-v8a]
-ANDROID_TARGET_ARCH := armeabi-v7a
+ANDROID_TARGET_ARCH := arm64-v8a
 
 # Directory where libraries and include files are instelled
 OUTPUT_DIR := /usr/src/baresip-studio/distribution
@@ -58,6 +58,8 @@ COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC
 CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/openssl/include \
 	-I$(PWD)/opus/include_opus \
+	-I$(PWD)/g7221/src \
+	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
@@ -66,13 +68,14 @@ CFLAGS := $(COMMON_CFLAGS) \
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/openssl \
 	-L$(PWD)/opus/.libs \
+	-L$(PWD)/g7221/src/.libs \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
 	-fPIE -pie
 
 COMMON_FLAGS := \
 	EXTRA_CFLAGS="$(CFLAGS) -DANDROID" \
-	EXTRA_CXXFLAGS="$(CFLAGS) -DANDROID" \
+	EXTRA_CXXFLAGS="$(CFLAGS) -DANDROID -DHAVE_PTHREAD" \
 	EXTRA_LFLAGS="$(LFLAGS)" \
 	SYSROOT=$(SYSROOT)/usr \
 	HAVE_INTTYPES_H=1 \
@@ -96,7 +99,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES := g711 opensles dtls_srtp opus zrtp \
+EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g7221 zrtp \
 	stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
@@ -136,6 +139,39 @@ install-opus: opus
 	mkdir -p $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 	cp opus/.libs/libopus.a $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: g7221
+g7221:
+	cd g7221 && \
+	libtoolize --force && \
+	autoreconf --install && \
+	autoconf && \
+	make clean && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
+	ac_cv_func_malloc_0_nonnull=yes \
+	./configure --host=$(TARGET) --disable-shared CFLAGS="$(COMMON_FLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
+	make
+
+.PHONY: install-g7221
+install-g7221: g7221
+	rm -rf $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+	cp g7221/src/.libs/libg722_1.a $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: webrtc
+webrtc:
+	cd webrtc && \
+	rm -rf obj && \
+	$(NDK_PATH)/ndk-build APP_PLATFORM=android-$(API_LEVEL)
+
+.PHONY: install-webrtc
+install-webrtc: webrtc
+	rm -rf $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
+	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: zrtp
 zrtp:
 	-make distclean -C zrtp
@@ -169,9 +205,9 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus zrtp librem.a libre.a
+libbaresip: Makefile openssl opus g7221 webrtc zrtp librem.a libre.a
 	make distclean -C baresip
-	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) \
+	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
 
 install-libbaresip: Makefile libbaresip
@@ -194,7 +230,8 @@ install-libbaresip: Makefile libbaresip
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install: install-openssl install-opus install-zrtp install-libbaresip
+install: install-openssl install-opus install-g7221 install-webrtc \
+	install-zrtp install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
@@ -202,7 +239,7 @@ install-all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re rem openssl opus* master.zip libzrtp-master zrtp
+	rm -fr baresip re rem openssl opus* webrtc master.zip libzrtp-master zrtp
 	git clone https://github.com/alfredh/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
@@ -211,6 +248,8 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
+	git clone https://freeswitch.org/stash/scm/sd/libg7221.git --single-branch g7221
+	git clone https://github.com/juha-h/libwebrtc.git -b 1.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -p0 < reg.c-patch
 
@@ -220,4 +259,6 @@ clean:
 	make distclean -C re
 	-make distclean -C openssl
 	-make distclean -C opus
+	-make distclean -C g7221
+	rm -rf webrtc/obj
 	-make distclean -C zrtp
