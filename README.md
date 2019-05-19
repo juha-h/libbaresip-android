@@ -50,6 +50,7 @@ this:
     re/
     rem/
     opus/
+    g7221/
     zrtp/
 ```
 
