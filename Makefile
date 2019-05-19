@@ -141,15 +141,15 @@ install-opus: opus
 
 .PHONY: g7221
 g7221:
+	-make distclean -C g7221
 	cd g7221 && \
 	libtoolize --force && \
 	autoreconf --install && \
 	autoconf && \
-	make clean && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --host=$(TARGET) --disable-shared CFLAGS="$(COMMON_FLAGS)" && \
+	./configure --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
@@ -248,7 +248,7 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://freeswitch.org/stash/scm/sd/libg7221.git --single-branch g7221
+	git clone https://github.com/juha-h/libg7221.git -b 1.0 --single-branch g7221
 	git clone https://github.com/juha-h/libwebrtc.git -b 1.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -p0 < reg.c-patch
