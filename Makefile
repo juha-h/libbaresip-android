@@ -59,6 +59,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/openssl/include \
 	-I$(PWD)/opus/include_opus \
 	-I$(PWD)/g7221/src \
+	-I$(PWD)/ilbc \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
@@ -69,6 +70,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/openssl \
 	-L$(PWD)/opus/.libs \
 	-L$(PWD)/g7221/src/.libs \
+	-L$(PWD)/ilbc \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
 	-fPIE -pie
@@ -101,7 +103,7 @@ OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
 EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g7221 zrtp \
 	stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd
+	srtp uuid debug_cmd ilbc
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -160,6 +162,20 @@ install-g7221: g7221
 	mkdir -p $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
 	cp g7221/src/.libs/libg722_1.a $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: ilbc
+ilbc:
+	make clean -C ilbc
+	cd ilbc && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make
+
+.PHONY: install-ilbc
+install-ilbc: ilbc
+	rm -rf $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+	cp ilbc/libilbc.a $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: webrtc
 webrtc:
 	cd webrtc && \
@@ -205,7 +221,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus g7221 webrtc zrtp librem.a libre.a
+libbaresip: Makefile openssl opus g7221 ilbc webrtc zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -230,8 +246,8 @@ install-libbaresip: Makefile libbaresip
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install: install-openssl install-opus install-g7221 install-webrtc \
-	install-zrtp install-libbaresip
+install: install-openssl install-opus install-g7221 install-ilbc \
+	install-webrtc install-zrtp install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
@@ -249,6 +265,7 @@ download-sources:
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
 	git clone https://github.com/juha-h/libg7221.git -b 1.0 --single-branch g7221
+	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/juha-h/libwebrtc.git -b 1.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -p0 < reg.c-patch
@@ -260,5 +277,6 @@ clean:
 	-make distclean -C openssl
 	-make distclean -C opus
 	-make distclean -C g7221
+	make clean -C ilbc
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
