@@ -287,7 +287,7 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://github.com/juha-h/libg7221.git -b 1.0 --single-branch g7221
+	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
