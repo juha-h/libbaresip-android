@@ -59,6 +59,8 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/openssl/include \
 	-I$(PWD)/opus/include_opus \
 	-I$(PWD)/g7221/src \
+	-I$(PWD)/spandsp/src \
+	-I$(PWD)/tiff-3.8.2/libtiff \
 	-I$(PWD)/ilbc \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
@@ -70,6 +72,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/openssl \
 	-L$(PWD)/opus/.libs \
 	-L$(PWD)/g7221/src/.libs \
+	-L$(PWD)/spandsp/src/.libs \
 	-L$(PWD)/ilbc \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
@@ -140,6 +143,26 @@ install-opus: opus
 	rm -rf $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 	cp opus/.libs/libopus.a $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: tiff
+tiff-3.8.2:
+	-make distclean -C tiff
+	cd tiff && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
+
+.PHONY: spandsp
+spandsp: tiff-3.8.2
+	-make distclean -C spandsp
+	cd spandsp && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
+
+.PHONY: install-spandsp
+install-spandsp: spandsp
+	rm -rf $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
+	cp spandsp/src/.libs/libspandsp.a $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: g7221
 g7221:
