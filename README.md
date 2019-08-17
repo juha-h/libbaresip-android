@@ -40,7 +40,7 @@ Download source code to ./libbaresip-android directory:
 ```
 $ make download-sources
 ```
-This will also patch reg.c as needed by baresip-studio project.
+This will also patch re as needed by baresip-studio project.
 
 After that you should have in libbaresip-android directory a layout like
 this:

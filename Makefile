@@ -291,7 +291,7 @@ download-sources:
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
-	patch -p0 < reg.c-patch
+	patch -p1 < re-patch
 
 clean:
 	make distclean -C baresip
