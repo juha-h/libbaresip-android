@@ -1,21 +1,22 @@
-diff --git a/re/src/sip/auth.c b/re/src/sip/auth.c
-index 1357cad..f33ba5a 100644
---- a/re/src/sip/auth.c
-+++ b/re/src/sip/auth.c
-@@ -161,7 +161,8 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
+diff --git a/src/sip/auth.c b/src/sip/auth.c
+index 1357cad..21e9c3c 100644
+--- a/src/sip/auth.c
++++ b/src/sip/auth.c
+@@ -161,7 +161,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
  			goto out;
  	}
  	else {
 -		if (!pl_isset(&ch.stale) || pl_strcasecmp(&ch.stale, "true")) {
-+		if (!pl_isset(&ch.stale) || pl_strcasecmp(&ch.stale, "true") ||
-+		    (realm->nc == 1)) {
++		/* error if first auth attempt fails */
++		if ((!pl_isset(&ch.stale) ||
++		     pl_strcasecmp(&ch.stale, "true")) && (realm->nc == 2)) {
  			err = EAUTH;
  			goto out;
  		}
-diff --git a/re/src/sipreg/reg.c b/re/src/sipreg/reg.c
+diff --git a/src/sipreg/reg.c b/src/sipreg/reg.c
 index 3967200..f9cd7ff 100644
---- a/re/src/sipreg/reg.c
-+++ b/re/src/sipreg/reg.c
+--- a/src/sipreg/reg.c
++++ b/src/sipreg/reg.c
 @@ -188,7 +188,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
  		reg->wait = reg->expires;
  		sip_msg_hdr_apply(msg, true, SIP_HDR_CONTACT, contact_handler,
