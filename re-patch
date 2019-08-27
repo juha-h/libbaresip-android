@@ -13,11 +13,173 @@ index 1357cad..21e9c3c 100644
  			err = EAUTH;
  			goto out;
  		}
+diff --git a/src/sip/request.c b/src/sip/request.c
+index aca2935..7506095 100644
+--- a/src/sip/request.c
++++ b/src/sip/request.c
+@@ -17,6 +17,9 @@
+ #include <re_sip.h>
+ #include "sip.h"
+ 
++#define DEBUG_MODULE "sip"
++#define DEBUG_LEVEL 6
++#include <re_dbg.h>
+ 
+ struct sip_request {
+ 	struct le le;
+@@ -603,8 +606,10 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 	struct pl pl;
+ 	int err;
+ 
+-	if (!sip || !met || !uri || !route || !mb)
++	if (!sip || !met || !uri || !route || !mb) {
++		DEBUG_WARNING("argument check failed\n");
+ 		return EINVAL;
++	}
+ 
+ 	if (pl_strcasecmp(&route->scheme, "sip"))
+ 		return ENOSYS;
+@@ -672,6 +677,8 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 			sip_transp_port(req->tp, route->port))) {
+ 
+ 		err = request(req, req->tp, &dst);
++		if (err)
++			DEBUG_WARNING("request failed\n");
+ 		if (!req->stateful) {
+ 			mem_deref(req);
+ 			return err;
+@@ -681,15 +688,21 @@ int sip_request(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 
+ 		req->port = sip_transp_port(req->tp, route->port);
+ 		err = addr_lookup(req, req->host);
++		if (err)
++			DEBUG_WARNING("addr_lookup failed\n");
+ 	}
+ 	else if (req->tp_selected) {
+ 
+ 		err = srv_lookup(req, req->host);
++		if (err)
++			DEBUG_WARNING("srv_lookup failed\n");
+ 	}
+ 	else {
+ 	        err = dnsc_query(&req->dnsq, sip->dnsc, req->host,
+ 				 DNS_TYPE_NAPTR, DNS_CLASS_IN, true,
+ 				 naptr_handler, req);
++		if (err)
++			DEBUG_WARNING("dnsc_query failed\n");
+ 	}
+ 
+  out:
+@@ -731,8 +744,10 @@ int sip_requestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 	va_list ap;
+ 	int err;
+ 
+-	if (!sip || !met || !uri || !fmt)
++	if (!sip || !met || !uri || !fmt) {
++		DEBUG_WARNING("argument check failed\n");
+ 		return EINVAL;
++	}
+ 
+ 	if (!route) {
+ 		struct pl uripl;
+@@ -740,8 +755,10 @@ int sip_requestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 		pl_set_str(&uripl, uri);
+ 
+ 		err = uri_decode(&lroute, &uripl);
+-		if (err)
++		if (err) {
++			DEBUG_WARNING("uri_decode failed\n");
+ 			return err;
++		}
+ 
+ 		route = &lroute;
+ 	}
+@@ -755,8 +772,10 @@ int sip_requestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 	if (auth)
+ 		err |= sip_auth_encode(mb, auth, met, uri);
+ 
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("sip_auth_encode failed\n");
+ 		goto out;
++	}
+ 
+ 	va_start(ap, fmt);
+ 	err = mbuf_vprintf(mb, fmt, ap);
+@@ -769,8 +788,10 @@ int sip_requestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 
+ 	err = sip_request(reqp, sip, stateful, met, -1, uri, -1, route, mb,
+ 			  (size_t)arg, sendh, resph, arg);
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("sip_request failed\n");
+ 		goto out;
++	}
+ 
+  out:
+ 	mem_deref(mb);
+@@ -805,8 +826,10 @@ int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 	va_list ap;
+ 	int err;
+ 
+-	if (!sip || !met || !dlg || !fmt)
++	if (!sip || !met || !dlg || !fmt) {
++		DEBUG_WARNING("argument check failed\n");
+ 		return EINVAL;
++	}
+ 
+ 	mb = mbuf_alloc(2048);
+ 	if (!mb)
+@@ -817,13 +840,21 @@ int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 	if (auth)
+ 		err |= sip_auth_encode(mb, auth, met, sip_dialog_uri(dlg));
+ 
++	if (err)
++		DEBUG_WARNING("sip_auth_encode failed\n");
++
+ 	err |= sip_dialog_encode(mb, dlg, cseq, met);
+ 
++	if (err)
++		DEBUG_WARNING("sip_dialog_encode failed\n");
++
+ 	if (sip->software)
+ 		err |= mbuf_printf(mb, "User-Agent: %s\r\n", sip->software);
+ 
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("mbuf_printf failed\n");
+ 		goto out;
++	}
+ 
+ 	va_start(ap, fmt);
+ 	err = mbuf_vprintf(mb, fmt, ap);
+@@ -837,8 +868,10 @@ int sip_drequestf(struct sip_request **reqp, struct sip *sip, bool stateful,
+ 	err = sip_request(reqp, sip, stateful, met, -1, sip_dialog_uri(dlg),
+ 			  -1, sip_dialog_route(dlg), mb, sip_dialog_hash(dlg),
+ 			  sendh, resph, arg);
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("sip_request failed\n");
+ 		goto out;
++	}
+ 
+  out:
+ 	mem_deref(mb);
 diff --git a/src/sipreg/reg.c b/src/sipreg/reg.c
-index 3967200..f9cd7ff 100644
+index 3967200..57d7fd4 100644
 --- a/src/sipreg/reg.c
 +++ b/src/sipreg/reg.c
-@@ -188,7 +188,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
+@@ -17,6 +17,9 @@
+ #include <re_sip.h>
+ #include <re_sipreg.h>
+ 
++#define DEBUG_MODULE "reg"
++#define DEBUG_LEVEL 6
++#include <re_dbg.h>
+ 
+ enum {
+ 	DEFAULT_EXPIRES = 3600,
+@@ -188,7 +191,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
  		reg->wait = reg->expires;
  		sip_msg_hdr_apply(msg, true, SIP_HDR_CONTACT, contact_handler,
  				  reg);
@@ -26,3 +188,75 @@ index 3967200..f9cd7ff 100644
  		reg->failc = 0;
  
  		if (reg->regid > 0 && !reg->terminated && !reg->ka)
+@@ -335,8 +338,10 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
+ 	int err;
+ 
+ 	if (!regp || !sip || !reg_uri || !to_uri || !from_uri ||
+-	    !expires || !cuser)
++	    !expires || !cuser) {
++		DEBUG_WARNING("argument check failed\n");
+ 		return EINVAL;
++	}
+ 
+ 	reg = mem_zalloc(sizeof(*reg), destructor);
+ 	if (!reg)
+@@ -344,18 +349,24 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
+ 
+ 	err = sip_dialog_alloc(&reg->dlg, reg_uri, to_uri, from_name, from_uri,
+ 			       routev, routec);
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("sip_dialog_alloc failed\n");
+ 		goto out;
++	}
+ 
+ 	err = sip_auth_alloc(&reg->auth, authh, aarg, aref);
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("sip_auth_alloc failed\n");
+ 		goto out;
++	}
+ 
+ 	err = str_dup(&reg->cuser, cuser);
+ 	if (params)
+ 		err |= str_dup(&reg->params, params);
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("str_dup params failed\n");
+ 		goto out;
++	}
+ 
+ 	/* Custom SIP headers */
+ 	if (fmt) {
+@@ -363,6 +374,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
+ 
+ 		reg->hdrs = mbuf_alloc(256);
+ 		if (!reg->hdrs) {
++			DEBUG_WARNING("mbuf_alloc failed\n");
+ 			err = ENOMEM;
+ 			goto out;
+ 		}
+@@ -372,8 +384,10 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
+ 		reg->hdrs->pos = 0;
+ 		va_end(ap);
+ 
+-		if (err)
++		if (err) {
++			DEBUG_WARNING("mbuf_vprintf failed\n");
+ 			goto out;
++		}
+ 	}
+ 
+ 	reg->sip     = mem_ref(sip);
+@@ -383,8 +397,10 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
+ 	reg->regid   = regid;
+ 
+ 	err = request(reg, true);
+-	if (err)
++	if (err) {
++		DEBUG_WARNING("request failed\n");
+ 		goto out;
++	}
+ 
+  out:
+ 	if (err)
