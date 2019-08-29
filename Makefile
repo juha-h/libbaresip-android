@@ -102,7 +102,7 @@ COMMON_FLAGS := \
 	ANDROID=yes \
 	RELEASE=1
 
-OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
+OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL) --with-rand-seed=getrandom
 
 EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g7221 zrtp \
 	stun turn ice presence contact mwi account natpmp \
