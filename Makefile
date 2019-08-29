@@ -282,10 +282,8 @@ download-sources:
 	git clone https://github.com/alfredh/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
-	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable --single-branch openssl
-	cd openssl
-	git checkout --detach 2403153c95b312e0a5a178c516335ee8dd17526c
-	cd ..
+	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable openssl
+	(cd openssl && git checkout --detach 2403153c95b312e0a5a178c516335ee8dd17526c)
 	wget http://downloads.xiph.org/releases/opus/opus-1.3.1.tar.gz
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
