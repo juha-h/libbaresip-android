@@ -1,0 +1,50 @@
+diff --git a/src/dns/ns.c b/src/dns/ns.c
+index aac713d..900be7c 100644
+--- a/src/dns/ns.c
++++ b/src/dns/ns.c
+@@ -79,7 +79,7 @@ static int parse_resolv_conf(char *domain, size_t dsize,
+ }
+ 
+ 
+-#ifdef __ANDROID__
++#ifdef __OLD_ANDROID__
+ static int get_android_dns(struct sa *nsv, uint32_t *n)
+ {
+ 	char prop[PROP_NAME_MAX] = {0}, value[PROP_VALUE_MAX] = {0};
+@@ -142,7 +142,7 @@ int dns_srv_get(char *domain, size_t dsize, struct sa *srvv, uint32_t *n)
+ 	err = get_windns(domain, dsize, srvv, n);
+ #endif
+ 
+-#ifdef __ANDROID__
++#ifdef __OLD_ANDROID__
+ 	err = get_android_dns(srvv, n);
+ #endif
+ 
+diff --git a/src/sip/auth.c b/src/sip/auth.c
+index 1357cad..21e9c3c 100644
+--- a/src/sip/auth.c
++++ b/src/sip/auth.c
+@@ -161,7 +161,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
+ 			goto out;
+ 	}
+ 	else {
+-		if (!pl_isset(&ch.stale) || pl_strcasecmp(&ch.stale, "true")) {
++		/* error if first auth attempt fails */
++		if ((!pl_isset(&ch.stale) ||
++		     pl_strcasecmp(&ch.stale, "true")) && (realm->nc == 2)) {
+ 			err = EAUTH;
+ 			goto out;
+ 		}
+diff --git a/src/sipreg/reg.c b/src/sipreg/reg.c
+index 3967200..f9cd7ff 100644
+--- a/src/sipreg/reg.c
++++ b/src/sipreg/reg.c
+@@ -188,7 +188,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
+ 		reg->wait = reg->expires;
+ 		sip_msg_hdr_apply(msg, true, SIP_HDR_CONTACT, contact_handler,
+ 				  reg);
+-		reg->wait *= 900;
++		reg->wait *= 200;
+ 		reg->failc = 0;
+ 
+ 		if (reg->regid > 0 && !reg->terminated && !reg->ka)
