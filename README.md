@@ -46,12 +46,13 @@ After that you should have in libbaresip-android directory a layout like
 this:
 ```
     baresip/
-    openssl/
     re/
     rem/
+    openssl/
     opus/
     g7221/
     ilbc/
+    webrtc/
     zrtp/
 ```
 
