@@ -107,7 +107,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g7221 zrtp \
+EXTRA_MODULES :=  webrtc_aec g711 opensles opengles dtls_srtp opus g7221 zrtp \
 	avcodec stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd ilbc
 
@@ -274,7 +274,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus g7221 ilbc webrtc zrtp librem.a libre.a
+libbaresip: Makefile openssl opus g7221 ilbc webrtc ffmpeg zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
