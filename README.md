@@ -9,6 +9,7 @@ Currently supported NDKs:
 
 | NDK  | Supported  |
 |------|------------|
+| r20  | Yes        |
 | r19  | Yes        |
 | r18  | No         |
 | ...  | No         |
