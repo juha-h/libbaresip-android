@@ -271,8 +271,8 @@ install-libbaresip: Makefile libbaresip
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install: install-openssl install-opus install-g7221 install-ilbc \
-	install-webrtc install-zrtp install-libbaresip
+install: install-openssl install-opus install-spandsp install-g7221 \
+	install-ilbc install-webrtc install-zrtp install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
