@@ -280,7 +280,8 @@ install-all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re rem openssl opus* webrtc master.zip libzrtp-master zrtp
+	rm -fr baresip re rem openssl opus* tiff spandsp g7221 ilbc webrtc \
+	master.zip libzrtp-master zrtp
 	git clone https://github.com/alfredh/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
