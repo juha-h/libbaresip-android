@@ -60,7 +60,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/opus/include_opus \
 	-I$(PWD)/g7221/src \
 	-I$(PWD)/spandsp/src \
-	-I$(PWD)/tiff-3.8.2/libtiff \
+	-I$(PWD)/tiff/libtiff \
 	-I$(PWD)/ilbc \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
@@ -104,7 +104,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g7221 zrtp \
+EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g722 g7221 zrtp \
 	stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd ilbc
 
@@ -145,16 +145,18 @@ install-opus: opus
 	cp opus/.libs/libopus.a $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: tiff
-tiff-3.8.2:
+tiff:
 	-make distclean -C tiff
 	cd tiff && \
+	./autogen.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
 .PHONY: spandsp
-spandsp: tiff-3.8.2
+spandsp: tiff
 	-make distclean -C spandsp
 	cd spandsp && \
+	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
@@ -287,6 +289,8 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.0.10 --single-branch tiff
+	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
@@ -299,6 +303,8 @@ clean:
 	make distclean -C re
 	-make distclean -C openssl
 	-make distclean -C opus
+	-make distclean -C tiff
+	-make distclean -C spandsp
 	-make distclean -C g7221
 	make clean -C ilbc
 	rm -rf webrtc/obj
