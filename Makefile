@@ -104,9 +104,9 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES :=  webrtc_aec g711 opensles dtls_srtp opus g722 g7221 zrtp \
-	stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd ilbc
+EXTRA_MODULES :=  webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
+	zrtp stun turn ice presence contact mwi account natpmp \
+	srtp uuid debug_cmd
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
