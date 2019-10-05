@@ -62,7 +62,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/opus/include_opus \
 	-I$(PWD)/g7221/src \
 	-I$(PWD)/spandsp/src \
-	-I$(PWD)/tiff-3.8.2/libtiff \
+	-I$(PWD)/tiff/libtiff \
 	-I$(PWD)/ilbc \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
@@ -107,9 +107,10 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES :=  webrtc_aec g711 opensles opengles dtls_srtp opus g7221 zrtp \
-	avcodec stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd ilbc
+EXTRA_MODULES :=  webrtc_aec opensles opengles dtls_srtp opus ilbc g711 \
+	g722 g7221 g726 avcodec \
+	zrtp stun turn ice presence contact mwi account natpmp \
+	srtp uuid debug_cmd
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -148,16 +149,18 @@ install-opus: opus
 	cp opus/.libs/libopus.a $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: tiff
-tiff-3.8.2:
+tiff:
 	-make distclean -C tiff
 	cd tiff && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
+	./autogen.sh && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
 .PHONY: spandsp
-spandsp: tiff-3.8.2
+spandsp: tiff
 	-make distclean -C spandsp
 	cd spandsp && \
+	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
@@ -274,7 +277,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus g7221 ilbc webrtc ffmpeg zrtp librem.a libre.a
+libbaresip: Makefile openssl opus spandsp g7221 ilbc ffmpeg webrtc zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -299,8 +302,8 @@ install-libbaresip: Makefile libbaresip
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install: install-openssl install-opus install-g7221 install-ilbc \
-	install-webrtc install-zrtp install-libbaresip
+install: install-openssl install-opus install-spandsp install-g7221 \
+	install-ilbc install-webrtc install-zrtp install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
@@ -308,7 +311,8 @@ install-all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re rem openssl opus* webrtc master.zip libzrtp-master zrtp
+	rm -fr baresip re rem openssl opus* tiff spandsp g7221 ilbc webrtc \
+	master.zip libzrtp-master zrtp
 	git clone https://github.com/alfredh/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
@@ -317,6 +321,8 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.0.10 --single-branch tiff
+	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
@@ -333,6 +339,8 @@ clean:
 	make distclean -C re
 	-make distclean -C openssl
 	-make distclean -C opus
+	-make distclean -C tiff
+	-make distclean -C spandsp
 	-make distclean -C g7221
 	make clean -C ilbc
 	rm -rf webrtc/obj
