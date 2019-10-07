@@ -1,25 +1,3 @@
-diff --git a/src/dns/ns.c b/src/dns/ns.c
-index aac713d..900be7c 100644
---- a/src/dns/ns.c
-+++ b/src/dns/ns.c
-@@ -79,7 +79,7 @@ static int parse_resolv_conf(char *domain, size_t dsize,
- }
- 
- 
--#ifdef __ANDROID__
-+#ifdef __OLD_ANDROID__
- static int get_android_dns(struct sa *nsv, uint32_t *n)
- {
- 	char prop[PROP_NAME_MAX] = {0}, value[PROP_VALUE_MAX] = {0};
-@@ -142,7 +142,7 @@ int dns_srv_get(char *domain, size_t dsize, struct sa *srvv, uint32_t *n)
- 	err = get_windns(domain, dsize, srvv, n);
- #endif
- 
--#ifdef __ANDROID__
-+#ifdef __OLD_ANDROID__
- 	err = get_android_dns(srvv, n);
- #endif
- 
 diff --git a/src/sip/auth.c b/src/sip/auth.c
 index 1357cad..21e9c3c 100644
 --- a/src/sip/auth.c
