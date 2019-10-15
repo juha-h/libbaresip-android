@@ -52,6 +52,7 @@ After that you should have in libbaresip-android directory a layout like this:
     tiff/
     spandsp/
     g7221/
+    amr/
     ilbc/
     webrtc/
     zrtp/
