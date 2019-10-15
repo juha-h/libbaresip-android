@@ -62,8 +62,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/spandsp/src \
 	-I$(PWD)/tiff/libtiff \
 	-I$(PWD)/ilbc \
-	-I$(PWD)/amr/amrnb \
-	-I$(PWD)/amr/amrwb \
+	-I$(PWD)/amr/include \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
@@ -75,8 +74,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/opus/.libs \
 	-L$(PWD)/g7221/src/.libs \
 	-L$(PWD)/spandsp/src/.libs \
-	-L$(PWD)/amr/amrnb/.libs \
-	-L$(PWD)/amr/amrwb/.libs \
+	-L$(PWD)/amr/lib \
 	-L$(PWD)/ilbc \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
@@ -209,8 +207,10 @@ install-ilbc: ilbc
 amr: 
 	-make distclean -C amr
 	cd amr && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
+	rm -rf lib include && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC --prefix=$(PWD)/amr && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
+	make install
 
 .PHONY: install-amr
 install-amr: amr
@@ -267,7 +267,7 @@ librem.a: Makefile libre.a
 libbaresip: Makefile openssl opus amr spandsp g7221 ilbc webrtc zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
-	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
+	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
