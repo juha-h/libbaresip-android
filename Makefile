@@ -107,7 +107,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES :=  webrtc_aec opensles opengles dtls_srtp opus ilbc g711 \
+EXTRA_MODULES :=  amr webrtc_aec opensles opengles dtls_srtp opus ilbc g711 \
 	g722 g7221 g726 avcodec \
 	zrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
