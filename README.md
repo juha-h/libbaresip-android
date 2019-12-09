@@ -26,7 +26,7 @@ or use ndk-bundle that comes with Android Studio 3.5.2 Sdk (tested).
 
 Clone libbaresip-android repository:
 ```
-$ git clone https://github.com/juha-g/libbaresip-android.git
+$ git clone https://github.com/juha-h/libbaresip-android.git
 ```
 This creates libbaresip-android directory containing Makefile.
 
