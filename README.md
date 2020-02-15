@@ -9,6 +9,7 @@ Currently supported NDKs:
 
 | NDK  | Supported  |
 |------|------------|
+| r21  | Yes        |
 | r20  | Yes        |
 | r19  | Yes        |
 | r18  | No         |
@@ -20,7 +21,7 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads/
 ```
-or use ndk-bundle that comes with Android Studio 3.5.2 Sdk (tested).
+or use ndk-bundle that comes with Android Studio 3.5.3 Sdk (tested).
 
 ## Step 1 - clone libbaresip-android
 
