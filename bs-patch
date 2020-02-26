@@ -26,25 +26,3 @@ index 79887c5..a777905 100644
  	return err;
  }
 
-diff --git a/src/ua.c b/src/ua.c
-index 750f214..5c8d5c8 100644
---- a/src/ua.c
-+++ b/src/ua.c
-@@ -1617,7 +1617,7 @@ int ua_init(const char *software, bool udp, bool tcp, bool tls)
- 	if (err)
- 		goto out;
- 
--	net_change(net, 60, net_change_handler, NULL);
-+	net_change(NULL, 60, net_change_handler, NULL);
- 
-  out:
- 	if (err) {
-@@ -1732,7 +1732,7 @@ int uag_reset_transp(bool reg, bool reinvite)
- 	/* Update SIP transports */
- 	sip_transp_flush(uag.sip);
- 
--	(void)net_check(net);
-+	(void)net_check(NULL);
- 	err = ua_add_transp(net);
- 	if (err)
- 		return err;
