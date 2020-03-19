@@ -1,0 +1,43 @@
+diff --git a/include/baresip.h b/include/baresip.h
+index 9bfab8a..e768cd3 100644
+--- a/include/baresip.h
++++ b/include/baresip.h
+@@ -682,6 +682,8 @@ enum ua_event {
+ 	UA_EVENT_CALL_LOCAL_SDP,      /**< param: offer or answer */
+ 	UA_EVENT_CALL_REMOTE_SDP,     /**< param: offer or answer */
+ 
++	UA_EVENT_GET_PASSWORD,
++
+ 	UA_EVENT_MAX,
+ };
+ 
+diff --git a/modules/account/account.c b/modules/account/account.c
+index 2aa2c10..b69f473 100644
+--- a/modules/account/account.c
++++ b/modules/account/account.c
+@@ -147,21 +147,15 @@ static int line_handler(const struct pl *addr, void *arg)
+ 	/* prompt password if auth_user is set, but auth_pass is not  */
+ 	if (str_isset(account_auth_user(acc)) &&
+ 	    !str_isset(account_auth_pass(acc))) {
+-		char *pass = NULL;
+ 
+-		(void)re_printf("Please enter password for %s: ",
+-				account_aor(acc));
++		char password[64];
+ 
+-		err = ui_password_prompt(&pass);
+-		if (err)
+-			goto out;
+-
+-		err = account_set_auth_pass(acc, pass);
++		ua_event((struct ua *)account_aor(acc), UA_EVENT_GET_PASSWORD,
++			 (struct call *)password, "");
+ 
+-		mem_deref(pass);
++		err = account_set_auth_pass(acc, password);
+ 	}
+ 
+- out:
+ 	return err;
+ }
+ 
