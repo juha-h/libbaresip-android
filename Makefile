@@ -5,7 +5,7 @@
 NDK_PATH  :=  /opt/Android/Sdk/ndk-bundle
 
 # Android API level
-API_LEVEL := 21
+API_LEVEL := 24
 
 # Set default from following values: [armeabi-v7a, arm64-v8a]
 ANDROID_TARGET_ARCH := arm64-v8a
@@ -286,6 +286,7 @@ install-ffmpeg: ffmpeg
 	cp ffmpeg/libavcodec/libavcodec.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavutil/libavutil.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavcodec/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	make distclean -C re
