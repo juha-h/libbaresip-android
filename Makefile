@@ -64,6 +64,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/spandsp/src \
 	-I$(PWD)/tiff/libtiff \
 	-I$(PWD)/ilbc \
+	-I$(PWD)/amr/include \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
@@ -76,6 +77,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/opus/.libs \
 	-L$(PWD)/g7221/src/.libs \
 	-L$(PWD)/spandsp/src/.libs \
+	-L$(PWD)/amr/lib \
 	-L$(PWD)/ilbc \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
@@ -107,10 +109,10 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES :=  amr webrtc_aec opensles opengles dtls_srtp opus ilbc g711 \
-	g722 g7221 g726 avcodec \
-	zrtp stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd
+EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
+	amr zrtp stun turn ice presence contact mwi account natpmp \
+	srtp uuid debug_cmd \
+	avcodec opengles
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -205,6 +207,22 @@ install-ilbc: ilbc
 	mkdir -p $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
 	cp ilbc/libilbc.a $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: amr
+amr: 
+	-make distclean -C amr
+	cd amr && \
+	rm -rf lib include && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC --prefix=$(PWD)/amr && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
+	make install
+
+.PHONY: install-amr
+install-amr: amr
+	rm -rf $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
+	cp amr/amrnb/.libs/libopencore-amrnb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrnb.a
+#	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
+
 .PHONY: webrtc
 webrtc:
 	cd webrtc && \
@@ -277,10 +295,10 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus spandsp g7221 ilbc ffmpeg webrtc zrtp librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 ilbc webrtc zrtp ffmpeg librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
-	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
+	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
@@ -303,7 +321,7 @@ install-libbaresip: Makefile libbaresip
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-ilbc install-webrtc install-zrtp install-libbaresip
+	install-ilbc install-amr install-webrtc install-zrtp install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
@@ -311,7 +329,7 @@ install-all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re rem openssl opus* tiff spandsp g7221 ilbc webrtc \
+	rm -fr baresip re rem openssl opus* tiff spandsp g7221 ilbc amr webrtc \
 	master.zip libzrtp-master zrtp
 	git clone https://github.com/alfredh/baresip.git
 	git clone https://github.com/creytiv/rem.git
@@ -325,6 +343,10 @@ download-sources:
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
+	wget https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-0.1.5.tar.gz
+	tar zxf opencore-amr-0.1.5.tar.gz
+	rm opencore-amr-0.1.5.tar.gz
+	mv opencore-amr-0.1.5 amr
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	wget https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2
@@ -332,6 +354,7 @@ download-sources:
 	ln -s ffmpeg-4.1 ffmpeg
 	patch -p1 < v4l2.c-patch
 	patch -d re -p1 < re-patch
+	patch -d baresip -p1 < baresip-patch
 
 clean:
 	make distclean -C baresip
@@ -343,6 +366,7 @@ clean:
 	-make distclean -C spandsp
 	-make distclean -C g7221
 	make clean -C ilbc
+	-make distclean -C amr
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
 	-make distclean -C ffmpeg
