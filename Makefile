@@ -112,7 +112,7 @@ OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
 	amr zrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd \
-	avcodec opengles
+	avcodec avformat opengles
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
