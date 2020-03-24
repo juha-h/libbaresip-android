@@ -349,10 +349,9 @@ download-sources:
 	mv opencore-amr-0.1.5 amr
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
-	wget https://ffmpeg.org/releases/ffmpeg-4.1.tar.bz2
-	tar jxf ffmpeg-4.1.tar.bz2
-	ln -s ffmpeg-4.1 ffmpeg
-	patch -p1 < v4l2.c-patch
+	wget https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
+	tar jxf ffmpeg-4.2.2.tar.bz2
+	ln -s ffmpeg-4.2.2 ffmpeg
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
 
