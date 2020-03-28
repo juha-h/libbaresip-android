@@ -112,7 +112,7 @@ OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
 	amr zrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd \
-	avcodec avformat opengles
+	avcodec avformat avcodec opengles
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -286,7 +286,7 @@ install-ffmpeg: ffmpeg
 	cp ffmpeg/libavcodec/libavcodec.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavutil/libavutil.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libavcodec/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavformat/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	make distclean -C re
