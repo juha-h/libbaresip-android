@@ -260,6 +260,23 @@ install-zrtp: zrtp
 	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: x264
+x264:
+	-make distclean -C x264
+	cd x264 && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	PREFIX=$(PWD)/android/arm \
+	./configure --host=$(TARGET) --enable-static --disable-cli --disable-asm --enable-pic && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
+	make
+
+install-x264: x264
+	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	cp x264/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: ffmpeg
 ffmpeg:
 	-make distclean -C ffmpeg
@@ -273,6 +290,9 @@ ffmpeg:
 	--enable-cross-compile \
 	--enable-mediacodec \
 	--enable-jni \
+	--enable-libx264 \
+	--enable-gpl \
+	 --extra-cflags="-I$(PWD)/x264" --extra-ldflags="-L$(PWD)/x264" \
 	--cc=$(CC) \
 	--strip=$(STRIP) \
 	--enable-decoder=hevc && \
@@ -352,6 +372,7 @@ download-sources:
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	wget https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
 	tar jxf ffmpeg-4.2.2.tar.bz2
+	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
 	ln -s ffmpeg-4.2.2 ffmpeg
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
@@ -369,4 +390,5 @@ clean:
 	-make distclean -C amr
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
+	-make distclean -C x264
 	-make distclean -C ffmpeg
