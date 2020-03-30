@@ -78,6 +78,8 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/g7221/src/.libs \
 	-L$(PWD)/spandsp/src/.libs \
 	-L$(PWD)/amr/lib \
+	-L$(PWD)/ffmpeg/libavdevice \
+	-L$(PWD)/ffmpeg/libavformat \
 	-L$(PWD)/ilbc \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
@@ -307,6 +309,7 @@ install-ffmpeg: ffmpeg
 	cp ffmpeg/libavutil/libavutil.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavformat/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavdevice/libavdevice.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	make distclean -C re
