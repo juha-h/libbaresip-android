@@ -78,8 +78,14 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/g7221/src/.libs \
 	-L$(PWD)/spandsp/src/.libs \
 	-L$(PWD)/amr/lib \
-	-L$(PWD)/ffmpeg/libavdevice \
 	-L$(PWD)/ffmpeg/libavformat \
+	-L$(PWD)/ffmpeg/libavcodec \
+	-L$(PWD)/ffmpeg/libswresample \
+	-L$(PWD)/ffmpeg/libavutil \
+	-L$(PWD)/ffmpeg/libavdevice \
+	-L$(PWD)/ffmpeg/libavfilter \
+	-L$(PWD)/ffmpeg/libswscale \
+	-L$(PWD)/ffmpeg/libpostproc \
 	-L$(PWD)/ilbc \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
@@ -274,13 +280,8 @@ x264:
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
 
-install-x264: x264
-	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-	cp x264/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-
 .PHONY: ffmpeg
-ffmpeg:
+ffmpeg: x264
 	-make distclean -C ffmpeg
 	cd ffmpeg && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
@@ -303,6 +304,9 @@ ffmpeg:
 	make -j4
 
 install-ffmpeg: ffmpeg
+	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	cp x264/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavcodec/libavcodec.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
@@ -310,6 +314,9 @@ install-ffmpeg: ffmpeg
 	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavformat/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavdevice/libavdevice.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavfilter/libavfilter.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libswscale/libswscale.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libpostproc/libpostproc.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	make distclean -C re
@@ -345,7 +352,8 @@ install-libbaresip: Makefile libbaresip
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-ilbc install-amr install-webrtc install-zrtp install-libbaresip
+	install-ilbc install-amr install-webrtc install-zrtp \
+	install-ffmpeg install-libbaresip
 
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
