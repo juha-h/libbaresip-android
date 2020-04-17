@@ -74,6 +74,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
+	-I$(PWD)/vpx \
 	-I$(PWD)/ffmpeg \
 	-march=$(MARCH)
 
