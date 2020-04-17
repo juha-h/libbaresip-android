@@ -20,6 +20,8 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	CLANG_TARGET := armv7a-linux-androideabi
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm
+	VPX_TARGET   := armv7-android-gcc
+	DISABLE_NEON := --disable-neon
 	FFMPEG_ARCH  := arm
 	MARCH        := armv7-a
 else
@@ -27,6 +29,8 @@ else
 	CLANG_TARGET := $(TARGET)
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm64
+	VPX_TARGET   := arm64-android-gcc
+	DISABLE_NEON :=
 	FFMPEG_ARCH  := aarch64
 	MARCH        := armv8-a
 endif
@@ -34,6 +38,7 @@ endif
 PLATFORM	:= android-$(API_LEVEL)
 OS		    := $(shell uname -s | tr "[A-Z]" "[a-z]")
 HOST_OS		:= linux-x86_64
+CPU_COUNT	:= $(shell nproc)
 
 PWD		:= $(shell pwd)
 
@@ -119,8 +124,7 @@ OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
 EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
 	amr zrtp stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd \
-	avcodec avformat avcodec opengles
+	srtp uuid debug_cmd avcodec avformat vp8 vp9 opengles
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -268,6 +272,51 @@ install-zrtp: zrtp
 	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: vpx
+vpx:
+	rm -rf vpx/build_tmp && \
+	mkdir vpx/build_tmp && \
+	cd vpx/build_tmp && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX="$(CXX) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) STRIP=$(STRIP) \
+	../configure \
+	--target=$(VPX_TARGET) \
+	--enable-libs \
+	--enable-pic \
+	--enable-optimizations \
+	--enable-better-hw-compatibility \
+	$(DISABLE_NEON) \
+	--enable-vp8 \
+	--enable-vp9 \
+	--enable-multithread \
+	--enable-static \
+	--disable-examples \
+	--disable-tools \
+	--disable-docs \
+	--disable-shared \
+	--disable-unit-tests \
+	--disable-decode-perf-tests \
+	--disable-encode-perf-tests \
+	--disable-codec-srcs \
+	--disable-debug-libs \
+	--disable-internal-stats \
+	--disable-debug \
+	--disable-gprof \
+	--disable-gcov \
+	--disable-ccache \
+	--disable-install-bins \
+	--disable-install-srcs \
+	--disable-install-docs && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) STRIP=$(STRIP) \
+	make -j$(CPU_COUNT)
+
+.PHONY: install-vpx
+install-vpx: vpx
+	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	cp vpx/build_tmp/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: x264
 x264:
 	-make distclean -C x264
@@ -278,10 +327,10 @@ x264:
 	./configure --host=$(TARGET) --enable-static --disable-cli --disable-asm --enable-pic && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
-	make
+	make -j$(CPU_COUNT)
 
 .PHONY: ffmpeg
-ffmpeg: x264
+ffmpeg: vpx x264
 	-make distclean -C ffmpeg
 	cd ffmpeg && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
@@ -294,16 +343,24 @@ ffmpeg: x264
 	--enable-mediacodec \
 	--enable-jni \
 	--enable-libx264 \
+	--enable-libvpx \
 	--enable-gpl \
-	 --extra-cflags="-I$(PWD)/x264" --extra-ldflags="-L$(PWD)/x264" \
+	--disable-programs \
+	--disable-doc \
+	--disable-debug \
+	--extra-cflags="-I$(PWD)/x264 -I$(PWD)/vpx" \
+	--extra-ldflags="-L$(PWD)/x264 -L$(PWD)/vpx/build_tmp" \
 	--cc=$(CC) \
 	--strip=$(STRIP) \
 	--enable-decoder=hevc && \
 	CC="$(CC) --sysroot $(SYSROOT) --extra-cflags=-fno-integrated-as" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make -j4
+	make -j$(CPU_COUNT)
 
 install-ffmpeg: ffmpeg
+	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	cp vpx/build_tmp/libvpx.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	cp x264/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
@@ -381,9 +438,10 @@ download-sources:
 	mv opencore-amr-0.1.5 amr
 	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
+	git clone https://github.com/webmproject/libvpx -b v1.8.2 --single-branch vpx
+	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
 	wget https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
 	tar jxf ffmpeg-4.2.2.tar.bz2
-	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
 	ln -s ffmpeg-4.2.2 ffmpeg
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
@@ -401,5 +459,6 @@ clean:
 	-make distclean -C amr
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
+	rm -rf vpx/build_tmp
 	-make distclean -C x264
 	-make distclean -C ffmpeg
