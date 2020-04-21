@@ -1,12 +1,13 @@
 diff --git a/include/baresip.h b/include/baresip.h
-index 7553e28..c76abaf 100644
+index 7553e28..0ad9ae0 100644
 --- a/include/baresip.h
 +++ b/include/baresip.h
-@@ -709,6 +709,8 @@ enum ua_event {
+@@ -709,6 +709,9 @@ enum ua_event {
  	UA_EVENT_CALL_LOCAL_SDP,      /**< param: offer or answer */
  	UA_EVENT_CALL_REMOTE_SDP,     /**< param: offer or answer */
  
 +	UA_EVENT_GET_PASSWORD,
++	UA_EVENT_GET_WINDOW,
 +
  	UA_EVENT_MAX,
  };
@@ -40,4 +41,50 @@ index 2aa2c10..b69f473 100644
 - out:
  	return err;
  }
+ 
+diff --git a/modules/opengles/opengles.c b/modules/opengles/opengles.c
+index 417cbb6..91145aa 100644
+--- a/modules/opengles/opengles.c
++++ b/modules/opengles/opengles.c
+@@ -234,12 +234,19 @@ static int opengles_alloc(struct vidisp_st **stp, const struct vidisp *vd,
+ 	(void)resizeh;
+ 	(void)arg;
+ 
++	info("opengles: at opengles_alloc()\n");
++
+ 	st = mem_zalloc(sizeof(*st), destructor);
+ 	if (!st)
+ 		return ENOMEM;
+ 
+ 	st->vd = vd;
+ 
++	ua_event((struct ua *)NULL, UA_EVENT_GET_WINDOW,
++		 (struct call *)&(st->window), "");
++
++	info("opengles: got window %p\n", st->window);
++
+ #ifdef DARWIN
+ 	err = context_init(st);
+ 	if (err)
+diff --git a/modules/opengles/opengles.h b/modules/opengles/opengles.h
+index 6c61a1e..719730a 100644
+--- a/modules/opengles/opengles.h
++++ b/modules/opengles/opengles.h
+@@ -4,6 +4,8 @@
+  * Copyright (C) 2010 Creytiv.com
+  */
+ 
++#include <android/native_window.h>
++#include <android/native_window_jni.h>
+ 
+ struct vidisp_st {
+ 	const struct vidisp *vd;  /* pointer to base-class (inheritance) */
+@@ -16,6 +18,8 @@ struct vidisp_st {
+ 	GLfloat vertices[4 * 3];
+ 
+ 	void *view;
++
++	ANativeWindow *window;
+ };
+ 
  
