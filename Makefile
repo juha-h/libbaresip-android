@@ -123,9 +123,9 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
-	amr zrtp stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd avcodec avformat vp8 vp9 opengles
+EXTRA_MODULES := webrtc_aec opensles opengles dtls_srtp opus ilbc g711 g722 \
+	g7221 g726 amr zrtp stun turn ice presence contact mwi account natpmp \
+	srtp uuid debug_cmd avcodec avformat vp8 vp9
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -408,6 +408,10 @@ install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/baresip/include
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
+
+install-all-libbaresip:
+	make install-libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
+	make install-libbaresip ANDROID_TARGET_ARCH=arm64-v8a
 
 install: install-openssl install-opus install-spandsp install-g7221 \
 	install-ilbc install-amr install-webrtc install-zrtp \
