@@ -1,8 +1,8 @@
 diff --git a/include/baresip.h b/include/baresip.h
-index 7553e28..0ad9ae0 100644
+index 7553e28..c76abaf 100644
 --- a/include/baresip.h
 +++ b/include/baresip.h
-@@ -709,6 +709,9 @@ enum ua_event {
+@@ -709,6 +709,8 @@ enum ua_event {
  	UA_EVENT_CALL_LOCAL_SDP,      /**< param: offer or answer */
  	UA_EVENT_CALL_REMOTE_SDP,     /**< param: offer or answer */
  
