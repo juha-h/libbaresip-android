@@ -340,11 +340,21 @@ ffmpeg: vpx x264
 	./configure \
 	--target-os=android \
 	--arch=$(FFMPEG_ARCH) \
+	--disable-everything \
 	--enable-cross-compile \
 	--enable-mediacodec \
 	--enable-jni \
 	--enable-libx264 \
 	--enable-libvpx \
+	--enable-encoder=libx264 \
+	--enable-decoder=h264 \
+	--enable-encoder=libvpx_vp8 \
+	--enable-decoder=vp8 \
+	--enable-encoder=libvpx_vp9 \
+	--enable-decoder=vp9 \
+	--enable-decoder=rawvideo \
+	--enable-indev=android_camera \
+	--enable-small \
 	--enable-gpl \
 	--disable-programs \
 	--disable-doc \
@@ -367,7 +377,10 @@ install-ffmpeg: ffmpeg
 	cp x264/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/ffmpeg/include
+	mkdir -p $(OUTPUT_DIR)/ffmpeg/include/libavcodec
 	cp ffmpeg/libavcodec/libavcodec.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
 	cp ffmpeg/libavutil/libavutil.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg/libavformat/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
