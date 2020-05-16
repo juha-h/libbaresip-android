@@ -284,23 +284,20 @@ vpx:
 	--target=$(VPX_TARGET) \
 	--enable-libs \
 	--enable-pic \
-	--enable-optimizations \
 	--enable-better-hw-compatibility \
 	$(DISABLE_NEON) \
 	--enable-vp8 \
 	--enable-vp9 \
-	--enable-multithread \
-	--enable-static \
+	--enable-realtime-only \
+	--enable-small \
 	--disable-examples \
 	--disable-tools \
 	--disable-docs \
-	--disable-shared \
 	--disable-unit-tests \
 	--disable-decode-perf-tests \
 	--disable-encode-perf-tests \
 	--disable-codec-srcs \
 	--disable-debug-libs \
-	--disable-internal-stats \
 	--disable-debug \
 	--disable-gprof \
 	--disable-gcov \
@@ -325,7 +322,15 @@ x264:
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
 	PREFIX=$(PWD)/android/arm \
-	./configure --host=$(TARGET) --enable-static --disable-cli --disable-asm --enable-pic && \
+	./configure --host=$(TARGET) \
+	--enable-static \
+	--enable-strip \
+	--disable-cli \
+	--disable-avs \
+	--disable-gpac \
+	--disable-lsmash \
+	--disable-asm \
+	--enable-pic && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make -j$(CPU_COUNT)
