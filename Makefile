@@ -353,6 +353,7 @@ ffmpeg: vpx x264
 	--enable-libvpx \
 	--enable-encoder=libx264 \
 	--enable-decoder=h264 \
+	--enable-decoder=h264_mediacodec \
 	--enable-encoder=libvpx_vp8 \
 	--enable-decoder=vp8 \
 	--enable-encoder=libvpx_vp9 \
