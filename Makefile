@@ -347,13 +347,11 @@ ffmpeg: vpx x264
 	--arch=$(FFMPEG_ARCH) \
 	--disable-everything \
 	--enable-cross-compile \
-	--enable-mediacodec \
 	--enable-jni \
 	--enable-libx264 \
 	--enable-libvpx \
 	--enable-encoder=libx264 \
 	--enable-decoder=h264 \
-	--enable-decoder=h264_mediacodec \
 	--enable-encoder=libvpx_vp8 \
 	--enable-decoder=vp8 \
 	--enable-encoder=libvpx_vp9 \
@@ -368,8 +366,7 @@ ffmpeg: vpx x264
 	--extra-cflags="-I$(PWD)/x264 -I$(PWD)/vpx" \
 	--extra-ldflags="-L$(PWD)/x264 -L$(PWD)/vpx/build_tmp" \
 	--cc=$(CC) \
-	--strip=$(STRIP) \
-	--enable-decoder=hevc && \
+	--strip=$(STRIP) && \
 	CC="$(CC) --sysroot $(SYSROOT) --extra-cflags=-fno-integrated-as" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
 	make -j$(CPU_COUNT)
