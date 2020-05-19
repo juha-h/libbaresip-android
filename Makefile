@@ -464,6 +464,7 @@ download-sources:
 	wget https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
 	tar jxf ffmpeg-4.2.2.tar.bz2
 	ln -s ffmpeg-4.2.2 ffmpeg
+	patch -d ffmpeg -p1 < ffmpeg-patch
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
 
