@@ -329,7 +329,6 @@ x264:
 	--disable-avs \
 	--disable-gpac \
 	--disable-lsmash \
-	--disable-asm \
 	--enable-pic && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
