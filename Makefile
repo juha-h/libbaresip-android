@@ -460,9 +460,7 @@ download-sources:
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	git clone https://github.com/webmproject/libvpx -b v1.8.2 --single-branch vpx
 	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
-	wget https://ffmpeg.org/releases/ffmpeg-4.2.2.tar.bz2
-	tar jxf ffmpeg-4.2.2.tar.bz2
-	ln -s ffmpeg-4.2.2 ffmpeg
+	git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.2 --single-branch ffmpeg
 	patch -d ffmpeg -p1 < ffmpeg-patch
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
