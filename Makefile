@@ -36,10 +36,16 @@ else
 endif
 
 PLATFORM	:= android-$(API_LEVEL)
-OS		:= linux
-HOST_OS		:= linux-x86_64
-CPU_COUNT	:= $(shell nproc)
 
+OS		:= $(shell uname -s | tr "[A-Z]" "[a-z]")
+ifeq ($(OS),linux)
+	HOST_OS   := linux-x86_64
+endif
+ifeq ($(OS),darwin)
+	HOST_OS   := darwin-x86_64
+endif
+
+CPU_COUNT	:= $(shell nproc)
 PWD		:= $(shell pwd)
 
 # Toolchain and sysroot
@@ -443,7 +449,7 @@ download-sources:
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/creytiv/re.git
 	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable openssl
-	wget http://downloads.xiph.org/releases/opus/opus-1.3.1.tar.gz
+	wget https://downloads.xiph.org/releases/opus/opus-1.3.1.tar.gz
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
