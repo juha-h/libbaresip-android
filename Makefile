@@ -36,7 +36,7 @@ else
 endif
 
 PLATFORM	:= android-$(API_LEVEL)
-OS		    := $(shell uname -s | tr "[A-Z]" "[a-z]")
+OS		:= linux
 HOST_OS		:= linux-x86_64
 CPU_COUNT	:= $(shell nproc)
 
