@@ -30,8 +30,14 @@ else
 endif
 
 PLATFORM	:= android-$(API_LEVEL)
-OS		:= linux
-HOST_OS		:= linux-x86_64
+
+OS		:= $(shell uname -s | tr "[A-Z]" "[a-z]")
+ifeq ($(OS),linux)
+	HOST_OS   := linux-x86_64
+endif
+ifeq ($(OS),darwin)
+	HOST_OS   := darwin-x86_64
+endif
 
 PWD		:= $(shell pwd)
 
