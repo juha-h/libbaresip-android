@@ -1,8 +1,8 @@
 diff --git a/include/baresip.h b/include/baresip.h
-index 7553e28..c76abaf 100644
+index bda9aeb..a080348 100644
 --- a/include/baresip.h
 +++ b/include/baresip.h
-@@ -709,6 +709,8 @@ enum ua_event {
+@@ -719,6 +719,8 @@ enum ua_event {
  	UA_EVENT_CALL_LOCAL_SDP,      /**< param: offer or answer */
  	UA_EVENT_CALL_REMOTE_SDP,     /**< param: offer or answer */
  
@@ -40,4 +40,51 @@ index 2aa2c10..b69f473 100644
 - out:
  	return err;
  }
+ 
+diff --git a/src/call.c b/src/call.c
+index 6d82027..0244c6a 100644
+--- a/src/call.c
++++ b/src/call.c
+@@ -360,10 +360,14 @@ static int update_audio(struct call *call)
+ 
+ static int update_video(struct call *call)
+ {
+-	const struct sdp_format *sc;
++	const struct sdp_format *sc = NULL;
+ 	int err = 0;
+ 
+-	sc = sdp_media_rformat(stream_sdpmedia(video_strm(call->video)), NULL);
++	struct sdp_media *m = stream_sdpmedia(video_strm(call->video));
++
++	if (!sdp_media_disabled(m))
++		sc = sdp_media_rformat(m, NULL);
++
+ 	if (sc) {
+ 		err = video_encoder_set(call->video, sc->data,
+ 					sc->pt, sc->params);
+@@ -385,6 +389,7 @@ static int update_video(struct call *call)
+ 	else if (call->video) {
+ 		info("video stream is disabled..\n");
+ 		video_stop(call->video);
++		video_stop_display(call->video);
+ 	}
+ 
+ 	return err;
+@@ -1409,6 +1414,8 @@ static int sipsess_offer_handler(struct mbuf **descp,
+ 
+ 	if (got_offer) {
+ 
++		call->got_offer = true;
++
+ 		/* Decode SDP Offer */
+ 		err = sdp_decode(call->sdp, msg->mb, true);
+ 		if (err) {
+@@ -1436,6 +1443,8 @@ static int sipsess_answer_handler(const struct sip_msg *msg, void *arg)
+ 
+ 	debug("call: got SDP answer (%zu bytes)\n", mbuf_get_left(msg->mb));
+ 
++	call->got_offer = false;
++
+ 	if (msg_ctype_cmp(&msg->ctyp, "multipart", "mixed"))
+ 		(void)sdp_decode_multipart(&msg->ctyp.params, msg->mb);
  
