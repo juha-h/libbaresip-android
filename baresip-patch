@@ -41,18 +41,6 @@ index 2aa2c10..b69f473 100644
  	return err;
  }
  
-diff --git a/modules/webrtc_aec/aec.cpp b/modules/webrtc_aec/aec.cpp
-index 33cd34d..2abbd05 100644
---- a/modules/webrtc_aec/aec.cpp
-+++ b/modules/webrtc_aec/aec.cpp
-@@ -102,6 +102,7 @@ int webrtc_aec_alloc(struct aec **stp, void **ctx, struct aufilt_prm *prm)
- 	}
- 
- 	WebRtcAec_enable_delay_agnostic(WebRtcAec_aec_core(aec->inst), 1);
-+	WebRtcAec_enable_extended_filter(WebRtcAec_aec_core(aec->inst), 1);
- 
- 	aec->config.nlpMode       = kAecNlpModerate;
- 	aec->config.skewMode      = kAecFalse;
 diff --git a/src/call.c b/src/call.c
 index dfa12a1..33cdc36 100644
 --- a/src/call.c
