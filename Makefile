@@ -11,7 +11,7 @@ API_LEVEL := 24
 ANDROID_TARGET_ARCH := arm64-v8a
 
 # Directory where libraries and include files are instelled
-OUTPUT_DIR := /usr/src/baresip-studio/distribution
+OUTPUT_DIR := /usr/src/baresip-studio/distribution.video
 
 # -------------------- GENERATED VALUES --------------------
 
