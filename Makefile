@@ -461,7 +461,7 @@ download-sources:
 	tar zxf opencore-amr-0.1.5.tar.gz
 	rm opencore-amr-0.1.5.tar.gz
 	mv opencore-amr-0.1.5 amr
-	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
+	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	git clone https://github.com/webmproject/libvpx -b v1.8.2 --single-branch vpx
 	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
