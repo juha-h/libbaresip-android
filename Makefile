@@ -326,7 +326,7 @@ download-sources:
 	tar zxf opencore-amr-0.1.5.tar.gz
 	rm opencore-amr-0.1.5.tar.gz
 	mv opencore-amr-0.1.5 amr
-	git clone https://github.com/juha-h/libwebrtc.git -b 2.0 --single-branch webrtc
+	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
