@@ -14,15 +14,15 @@ index 1357cad..21e9c3c 100644
  			goto out;
  		}
 diff --git a/src/sipreg/reg.c b/src/sipreg/reg.c
-index 3967200..f9cd7ff 100644
+index 16467ef..baf0a7a 100644
 --- a/src/sipreg/reg.c
 +++ b/src/sipreg/reg.c
-@@ -188,7 +188,7 @@ static void response_handler(int err, const struct sip_msg *msg, void *arg)
- 		reg->wait = reg->expires;
- 		sip_msg_hdr_apply(msg, true, SIP_HDR_CONTACT, contact_handler,
- 				  reg);
--		reg->wait *= 900;
-+		reg->wait *= 200;
- 		reg->failc = 0;
+@@ -381,7 +381,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
  
- 		if (reg->regid > 0 && !reg->terminated && !reg->ka)
+ 	reg->sip     = mem_ref(sip);
+ 	reg->expires = expires;
+-	reg->rwait   = 90;
++	reg->rwait   = 20;
+ 	reg->resph   = resph ? resph : dummy_handler;
+ 	reg->arg     = arg;
+ 	reg->regid   = regid;
