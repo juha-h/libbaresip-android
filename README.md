@@ -9,6 +9,7 @@ Currently supported NDKs:
 
 | NDK  | Supported  |
 |------|------------|
+| r21  | Yes        |
 | r20  | Yes        |
 | r19  | Yes        |
 | r18  | No         |
@@ -52,10 +53,14 @@ After that you should have in libbaresip-android directory a layout like this:
     tiff/
     spandsp/
     g7221/
+    amr/
+    vo-amrwbenc/
     ilbc/
     webrtc/
     zrtp/
     ffmpeg/
+    vpx/
+    x264/
 ```
 
 ## Step 4 - build and install libraries
