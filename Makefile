@@ -76,6 +76,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/tiff/libtiff \
 	-I$(PWD)/ilbc \
 	-I$(PWD)/amr/include \
+	-I$(PWD)/vo-amrwbenc/include \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
@@ -90,6 +91,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/g7221/src/.libs \
 	-L$(PWD)/spandsp/src/.libs \
 	-L$(PWD)/amr/lib \
+	-L$(PWD)/vo-amrwbenc/.libs \
 	-L$(PWD)/ffmpeg/libavformat \
 	-L$(PWD)/ffmpeg/libavcodec \
 	-L$(PWD)/ffmpeg/libswresample \
@@ -235,12 +237,23 @@ amr:
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	make install
 
+.PHONY: vo-amrwbenc
+vo-amrwbenc:
+	cd vo-amrwbenc && \
+	autoreconf --install && \
+	rm -rf .libs include && \
+	make distclean && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CFLAGS=-fPIC CXXFLAGS=-fPIC --prefix=$(PWD)/vo-amrwbenc && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
+	make install
+
 .PHONY: install-amr
-install-amr: amr
+install-amr: amr vo-amrwbenc
 	rm -rf $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
 	cp amr/amrnb/.libs/libopencore-amrnb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrnb.a
-#	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
+	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
+	cp vo-amrwbenc/.libs/libvo-amrwbenc.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwbenc.a
 
 .PHONY: webrtc
 webrtc:
@@ -457,10 +470,8 @@ download-sources:
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
-	wget https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-0.1.5.tar.gz
-	tar zxf opencore-amr-0.1.5.tar.gz
-	rm opencore-amr-0.1.5.tar.gz
-	mv opencore-amr-0.1.5 amr
+	git clone https://git.code.sf.net/p/opencore-amr/code amr
+	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	git clone https://github.com/webmproject/libvpx -b v1.8.2 --single-branch vpx
