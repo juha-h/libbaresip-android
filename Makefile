@@ -230,10 +230,11 @@ install-ilbc: ilbc
 
 .PHONY: amr
 amr: 
-	-make distclean -C amr
 	cd amr && \
 	rm -rf lib include && \
+	autoreconf --install && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC --prefix=$(PWD)/amr && \
+	make clean && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	make install
 
