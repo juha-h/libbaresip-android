@@ -224,10 +224,10 @@ amr:
 .PHONY: vo-amrwbenc
 vo-amrwbenc:
 	cd vo-amrwbenc && \
+	rm -rf include && \
 	autoreconf --install && \
-	rm -rf .libs include && \
-	make distclean && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CFLAGS=-fPIC CXXFLAGS=-fPIC --prefix=$(PWD)/vo-amrwbenc && \
+	make clean && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	make install
 
