@@ -513,6 +513,7 @@ clean:
 	-make distclean -C tiff
 	-make distclean -C spandsp
 	-make distclean -C g7221
+	-make clean -C bcg729
 	make clean -C ilbc
 	-make distclean -C amr
 	rm -rf webrtc/obj
