@@ -21,13 +21,13 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads/
 ```
-or use ndk-bundle that comes with Android Studio 3.4.1 Sdk (tested).
+or use ndk-bundle that comes with Android Studio 3.5.3 Sdk (tested).
 
 ## Step 1 - clone libbaresip-android
 
 Clone libbaresip-android repository:
 ```
-$ git clone https://github.com/juha-g/libbaresip-android.git
+$ git clone https://github.com/juha-h/libbaresip-android.git
 ```
 This creates libbaresip-android directory containing Makefile.
 
