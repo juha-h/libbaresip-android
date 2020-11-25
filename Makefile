@@ -65,6 +65,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/openssl/include \
 	-I$(PWD)/opus/include_opus \
 	-I$(PWD)/g7221/src \
+	-I$(PWD)/bcg729/include \
 	-I$(PWD)/spandsp/src \
 	-I$(PWD)/tiff/libtiff \
 	-I$(PWD)/ilbc \
@@ -115,7 +116,7 @@ COMMON_FLAGS := \
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
 EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
-	amr zrtp stun turn ice presence contact mwi account natpmp \
+	g729 amr zrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
 default:
@@ -196,6 +197,21 @@ install-g7221: g7221
 	rm -rf $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
 	cp g7221/src/.libs/libg722_1.a $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: g729
+g729:
+	-make clean -C bcg729
+	cd  bcg729 && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	cmake . && \
+	make
+
+.PHONY: install-g729
+install-g729: g729
+	rm -rf $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+	cp bcg729/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: ilbc
 ilbc:
@@ -284,7 +300,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus amr spandsp g7221 ilbc webrtc zrtp librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 ilbc webrtc zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -336,12 +352,14 @@ download-sources:
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
+	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://git.code.sf.net/p/opencore-amr/code amr
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
+	cp -r baresip-g729 baresip/modules/g729
 
 clean:
 	make distclean -C baresip
