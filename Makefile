@@ -85,6 +85,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/amr/lib \
 	-L$(PWD)/vo-amrwbenc/.libs \
 	-L$(PWD)/ilbc \
+	-L$(PWD)/bcg729/src \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
 	-fPIE -pie
@@ -202,9 +203,8 @@ install-g7221: g7221
 g729:
 	-make clean -C bcg729
 	cd  bcg729 && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	cmake . && \
+	cmake . -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
+		-DCMAKE_C_COMPILER=$(CC) && \
 	make
 
 .PHONY: install-g729
