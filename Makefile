@@ -326,7 +326,8 @@ install-libbaresip: Makefile libbaresip
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-ilbc install-amr install-webrtc install-zrtp install-libbaresip
+	install-g729 install-ilbc install-amr install-webrtc install-zrtp \
+	install-libbaresip
 
 install-all-libbaresip:
 	make install-libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
@@ -370,6 +371,7 @@ clean:
 	-make distclean -C tiff
 	-make distclean -C spandsp
 	-make distclean -C g7221
+	-make clean -C bcg729
 	make clean -C ilbc
 	-make distclean -C amr
 	rm -rf webrtc/obj
