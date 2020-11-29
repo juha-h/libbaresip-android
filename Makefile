@@ -43,8 +43,9 @@ PWD		:= $(shell pwd)
 
 # Toolchain and sysroot
 TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/linux-x86_64
+CMAKE_TOOLCHAIN_FILE	:= $(NDK_PATH)/build/cmake/android.toolchain.cmake
 SYSROOT		:= $(TOOLCHAIN)/sysroot
-PKG_CONFIG_LIBDIR := $(NDK_PATH)/prebuilt/linux-x86_64/lib/pkgconfig
+PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/linux-x86_64/lib/pkgconfig
 
 # Toolchain tools
 PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
@@ -203,7 +204,9 @@ install-g7221: g7221
 g729:
 	-make clean -C bcg729
 	cd  bcg729 && \
-	cmake . -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
+	cmake . -DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
+		-DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
+		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
 		-DCMAKE_C_COMPILER=$(CC) && \
 	make
 
