@@ -220,18 +220,20 @@ install-g7221: g7221
 .PHONY: g729
 g729:
 	-make clean -C bcg729
-	cd  bcg729 && \
-	cmake . -DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
+	cd  bcg729/build && \
+	find . -maxdepth 1 ! -name CMakeLists.txt -type f -delete && \
+	rm -rf build CMakeFiles include src && \
+	cmake .. -DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
 		-DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
 		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
-		-DCMAKE_C_COMPILER=$(CC) && \
+		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_SKIP_INSTALL_RPATH=ON && \
 	make
 
 .PHONY: install-g729
 install-g729: g729
 	rm -rf $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
-	cp bcg729/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+	cp bcg729/build/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: ilbc
 ilbc:
