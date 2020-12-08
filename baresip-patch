@@ -1,8 +1,8 @@
 diff --git a/include/baresip.h b/include/baresip.h
-index c5fea51..15eddf1 100644
+index f12d51d..39f977b 100644
 --- a/include/baresip.h
 +++ b/include/baresip.h
-@@ -737,6 +737,8 @@ enum ua_event {
+@@ -744,6 +744,8 @@ enum ua_event {
  	UA_EVENT_CALL_LOCAL_SDP,      /**< param: offer or answer */
  	UA_EVENT_CALL_REMOTE_SDP,     /**< param: offer or answer */
  
@@ -12,10 +12,10 @@ index c5fea51..15eddf1 100644
  };
  
 diff --git a/modules/account/account.c b/modules/account/account.c
-index 2aa2c10..b69f473 100644
+index d2d782e..fbaea7b 100644
 --- a/modules/account/account.c
 +++ b/modules/account/account.c
-@@ -147,21 +147,15 @@ static int line_handler(const struct pl *addr, void *arg)
+@@ -152,21 +152,15 @@ static int line_handler(const struct pl *addr, void *arg)
  	/* prompt password if auth_user is set, but auth_pass is not  */
  	if (str_isset(account_auth_user(acc)) &&
  	    !str_isset(account_auth_pass(acc))) {
@@ -41,3 +41,19 @@ index 2aa2c10..b69f473 100644
  	return err;
  }
  
+diff --git a/src/call.c b/src/call.c
+index 4cce177..7ba0d56 100644
+--- a/src/call.c
++++ b/src/call.c
+@@ -751,11 +751,6 @@ int call_alloc(struct call **callp, const struct config *cfg, struct list *lst,
+ 	if (err)
+ 		goto out;
+ 
+-	err = sdp_session_set_lattr(call->sdp, true,
+-				    "tool", "baresip " BARESIP_VERSION);
+-	if (err)
+-		goto out;
+-
+ 	/* Check for incoming SDP Offer */
+ 	if (msg && mbuf_get_left(msg->mb))
+ 		got_offer = true;
