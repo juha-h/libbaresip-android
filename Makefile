@@ -472,10 +472,6 @@ install: install-openssl install-opus install-spandsp install-g7221 \
 	install-g729 install-ilbc install-amr install-webrtc install-zrtp \
 	install-ffmpeg install-libbaresip
 
-install-all-libbaresip:
-	make install-libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
-	make install-libbaresip ANDROID_TARGET_ARCH=arm64-v8a
-
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
 	make install ANDROID_TARGET_ARCH=arm64-v8a
