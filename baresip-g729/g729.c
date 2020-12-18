@@ -119,6 +119,7 @@ static int encode(struct auenc_state *aes, bool *marker, uint8_t *buf,
 	unsigned int i, count;
 	uint8_t olen;
 	(void)marker;
+	(void)fmt;
 
 	if (!buf || !len || !sampv)
 		return EINVAL;
@@ -141,8 +142,9 @@ static int encode(struct auenc_state *aes, bool *marker, uint8_t *buf,
 static int decode(struct audec_state *ads, int fmt, void *sampv,
 		  size_t *sampc, bool marker, const uint8_t *buf, size_t len)
 {
-	(void)marker;
 	unsigned int i;
+	(void)fmt;
+	(void)marker;
 
 	if (!sampv || !sampc || !buf)
 		return EINVAL;
