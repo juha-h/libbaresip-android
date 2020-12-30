@@ -41,19 +41,6 @@ index fe0ba87..fc56f5d 100644
  	return err;
  }
  
-diff --git a/modules/avformat/video.c b/modules/avformat/video.c
-index 3cf74bb..5387833 100644
---- a/modules/avformat/video.c
-+++ b/modules/avformat/video.c
-@@ -73,7 +73,7 @@ int avformat_video_alloc(struct vidsrc_st **stp, const struct vidsrc *vs,
- 	st->frameh = frameh;
- 	st->arg    = arg;
- 
--	if (ctx && *ctx && (*ctx)->id && !strcmp((*ctx)->id, "avformat")) {
-+	if (false && ctx && *ctx && (*ctx)->id && !strcmp((*ctx)->id, "avformat")) {
- 		st->shared = mem_ref(*ctx);
- 	}
- 	else {
 diff --git a/src/call.c b/src/call.c
 index 89a3bf3..618a36c 100644
 --- a/src/call.c
