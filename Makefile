@@ -375,6 +375,22 @@ x264:
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make -j$(CPU_COUNT)
 
+.PHONY: x265
+x265:
+	rm -rf x265/build/${ANDROID_TARGET_ARCH} && \
+	mkdir x265/build/${ANDROID_TARGET_ARCH} && \
+	cd x265/build/${ANDROID_TARGET_ARCH} && \
+	cmake ../../source \
+	-DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
+	-DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
+	-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
+	-DCMAKE_C_COMPILER=$(CC) -DCMAKE_SKIP_INSTALL_RPATH=ON \
+	-DCMAKE_ANDROID_STL_TYPE=gnustl_static \
+	-DENABLE_SHARED=OFF -DENABLE_CLI=OFF && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
+	make -j$(CPU_COUNT) -Wno-absolute-value
+
 .PHONY: ffmpeg
 ffmpeg: vpx x264
 	-make distclean -C ffmpeg
@@ -479,7 +495,8 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		ilbc amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp
+		ilbc amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp \
+		vpx x264 x265 ffmpeg
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/baresip/re.git
@@ -499,6 +516,7 @@ download-sources:
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	git clone https://github.com/webmproject/libvpx -b v1.8.2 --single-branch vpx
 	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
+	hg clone -b stable http://hg.videolan.org/x265
 	git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.2 --single-branch ffmpeg
 	patch -d ffmpeg -p1 < ffmpeg-patch
 	patch -d re -p1 < re-patch
@@ -521,4 +539,6 @@ clean:
 	-make distclean -C zrtp
 	rm -rf vpx/build_tmp
 	-make distclean -C x264
+	rm -rf x265/build/android/armeabi-v7a
+	rm -rf x265/build/android/arm64-v8a
 	-make distclean -C ffmpeg
