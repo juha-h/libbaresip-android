@@ -15,6 +15,9 @@ OUTPUT_DIR := /usr/src/baresip-studio/distribution.video
 
 # -------------------- GENERATED VALUES --------------------
 
+CPU_COUNT	:= $(shell nproc)
+PWD		:= $(shell pwd)
+
 ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	TARGET       := arm-linux-androideabi
 	CLANG_TARGET := armv7a-linux-androideabi
@@ -24,6 +27,8 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	DISABLE_NEON := --disable-neon
 	FFMPEG_ARCH  := arm
 	MARCH        := armv7-a
+	FFMPEG_LIB   := $(PWD)/mobile-ffmpeg/prebuilt/android-arm
+	FFMPEG_DIS   := --disable-arm64-v8a
 else
 	TARGET       := aarch64-linux-android
 	CLANG_TARGET := $(TARGET)
@@ -33,6 +38,8 @@ else
 	DISABLE_NEON :=
 	FFMPEG_ARCH  := aarch64
 	MARCH        := armv8-a
+	FFMPEG_LIB   := $(PWD)/mobile-ffmpeg/prebuilt/android-arm64
+	FFMPEG_DIS   := --disable-arm-v7a
 endif
 
 PLATFORM	:= android-$(API_LEVEL)
@@ -44,9 +51,6 @@ endif
 ifeq ($(OS),darwin)
 	HOST_OS   := darwin-x86_64
 endif
-
-CPU_COUNT	:= $(shell nproc)
-PWD		:= $(shell pwd)
 
 # Toolchain and sysroot
 TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/linux-x86_64
@@ -83,8 +87,8 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
-	-I$(PWD)/vpx \
-	-I$(PWD)/ffmpeg \
+	-I$(PWD)/mobile-ffmpeg/src/libvpx \
+	-I$(PWD)/mobile-ffmpeg/src/ffmpeg \
 	-march=$(MARCH)
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
@@ -94,14 +98,6 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/spandsp/src/.libs \
 	-L$(PWD)/amr/lib \
 	-L$(PWD)/vo-amrwbenc/.libs \
-	-L$(PWD)/ffmpeg/libavformat \
-	-L$(PWD)/ffmpeg/libavcodec \
-	-L$(PWD)/ffmpeg/libswresample \
-	-L$(PWD)/ffmpeg/libavutil \
-	-L$(PWD)/ffmpeg/libavdevice \
-	-L$(PWD)/ffmpeg/libavfilter \
-	-L$(PWD)/ffmpeg/libswscale \
-	-L$(PWD)/ffmpeg/libpostproc \
 	-L$(PWD)/ilbc \
 	-L$(PWD)/bcg729/src \
 	-L$(PWD)/zrtp \
@@ -314,122 +310,43 @@ install-zrtp: zrtp
 	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: vpx
-vpx:
-	rm -rf vpx/build_tmp && \
-	mkdir vpx/build_tmp && \
-	cd vpx/build_tmp && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX="$(CXX) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) STRIP=$(STRIP) \
-	../configure \
-	--target=$(VPX_TARGET) \
-	--enable-libs \
-	--enable-pic \
-	--enable-better-hw-compatibility \
-	$(DISABLE_NEON) \
-	--enable-vp8 \
-	--enable-vp9 \
-	--enable-realtime-only \
-	--enable-small \
-	--disable-examples \
-	--disable-tools \
-	--disable-docs \
-	--disable-unit-tests \
-	--disable-decode-perf-tests \
-	--disable-encode-perf-tests \
-	--disable-codec-srcs \
-	--disable-debug-libs \
-	--disable-debug \
-	--disable-gprof \
-	--disable-gcov \
-	--disable-ccache \
-	--disable-install-bins \
-	--disable-install-srcs \
-	--disable-install-docs && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) STRIP=$(STRIP) \
-	make -j$(CPU_COUNT)
-
-.PHONY: install-vpx
-install-vpx: vpx
-	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	cp vpx/build_tmp/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: x264
-x264:
-	-make distclean -C x264
-	cd x264 && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	PREFIX=$(PWD)/android/arm \
-	./configure --host=$(TARGET) \
-	--enable-static \
-	--enable-strip \
-	--disable-cli \
-	--disable-avs \
-	--disable-gpac \
-	--disable-lsmash \
-	--enable-pic && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
-	make -j$(CPU_COUNT)
-
 .PHONY: ffmpeg
-ffmpeg: vpx x264
-	-make distclean -C ffmpeg
-	cd ffmpeg && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	PREFIX=$(PWD)/android/arm \
-	./configure \
-	--target-os=android \
-	--arch=$(FFMPEG_ARCH) \
-	--disable-everything \
-	--enable-cross-compile \
-	--enable-jni \
-	--enable-libx264 \
-	--enable-libvpx \
-	--enable-encoder=libx264 \
-	--enable-decoder=h264 \
-	--enable-encoder=libvpx_vp8 \
-	--enable-decoder=vp8 \
-	--enable-encoder=libvpx_vp9 \
-	--enable-decoder=vp9 \
-	--enable-decoder=rawvideo \
-	--enable-indev=android_camera \
-	--enable-small \
-	--enable-gpl \
-	--disable-programs \
-	--disable-doc \
-	--disable-debug \
-	--extra-cflags="-I$(PWD)/x264 -I$(PWD)/vpx" \
-	--extra-ldflags="-L$(PWD)/x264 -L$(PWD)/vpx/build_tmp" \
-	--cc=$(CC) \
-	--strip=$(STRIP) && \
-	CC="$(CC) --sysroot $(SYSROOT) --extra-cflags=-fno-integrated-as" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make -j$(CPU_COUNT)
+ffmpeg:
+	cd mobile-ffmpeg && \
+	rm -rf prebuilt/ && \
+	cp ../android-ffmpeg.sh build && \
+	ANDROID_HOME=/foo/bar \
+	ANDROID_NDK_ROOT=$(NDK_PATH) \
+	./android.sh --enable-gpl --no-archive \
+		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 --disable-x86-64 \
+		--enable-libvpx --enable-x264 --enable-x265
 
 install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	cp vpx/build_tmp/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/libvpx/lib/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-	cp x264/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/x264/lib/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/x265/lib/libx265.a $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/cpu-features/lib/
+	mkdir -p $(OUTPUT_DIR)/cpu-features/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/cpu-features/lib/libcpu_features.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/cpu-features/lib/libndk_compat.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/include/libavcodec
-	cp ffmpeg/libavcodec/libavcodec.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
-	cp ffmpeg/libavutil/libavutil.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libswresample/libswresample.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libavformat/libavformat.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libavdevice/libavdevice.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libavfilter/libavfilter.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libswscale/libswscale.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp ffmpeg/libpostproc/libpostproc.a $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(PWD)/mobile-ffmpeg/src/ffmpeg/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libavcodec.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libavutil.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libswresample.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libavformat.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libavdevice.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libavfilter.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libswscale.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/ffmpeg/lib/libpostproc.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	make distclean -C re
@@ -480,7 +397,7 @@ install-all:
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
 		ilbc amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp \
-		vpx x264 ffmpeg
+		mobile-ffmpeg
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/creytiv/rem.git
 	git clone https://github.com/baresip/re.git
@@ -498,10 +415,7 @@ download-sources:
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
-	git clone https://github.com/webmproject/libvpx -b v1.8.2 --single-branch vpx
-	git clone https://code.videolan.org/videolan/x264.git -b stable --single-branch x264
-	git clone https://github.com/FFmpeg/FFmpeg.git -b release/4.2 --single-branch ffmpeg
-	patch -d ffmpeg -p1 < ffmpeg-patch
+	git clone https://github.com/juha-h/mobile-ffmpeg.git
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
 	cp -r baresip-g729 baresip/modules/g729
@@ -520,6 +434,4 @@ clean:
 	-make distclean -C amr
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
-	rm -rf vpx/build_tmp
-	-make distclean -C x264
-	-make distclean -C ffmpeg
+	rm -rf mobile-ffmpeg/prebuilt
