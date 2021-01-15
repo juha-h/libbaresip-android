@@ -313,7 +313,7 @@ install-zrtp: zrtp
 .PHONY: ffmpeg
 ffmpeg:
 	cd mobile-ffmpeg && \
-	rm -rf prebuilt/ && \
+	rm -rf prebuilt/$(FFMPEG_LIB) && \
 	cp ../android-ffmpeg.sh build && \
 	ANDROID_HOME=/foo/bar \
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
@@ -331,8 +331,8 @@ install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/x265/lib/libx265.a $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/cpu-features/lib/
-	mkdir -p $(OUTPUT_DIR)/cpu-features/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/cpu-features/lib/libcpu_features.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/cpu-features/lib/libndk_compat.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
