@@ -1,16 +1,3 @@
-diff --git a/include/baresip.h b/include/baresip.h
-index f12d51d..39f977b 100644
---- a/include/baresip.h
-+++ b/include/baresip.h
-@@ -744,6 +744,8 @@ enum ua_event {
- 	UA_EVENT_CALL_LOCAL_SDP,      /**< param: offer or answer */
- 	UA_EVENT_CALL_REMOTE_SDP,     /**< param: offer or answer */
- 
-+	UA_EVENT_GET_PASSWORD,
-+
- 	UA_EVENT_MAX,
- };
- 
 diff --git a/modules/account/account.c b/modules/account/account.c
 index d2d782e..fbaea7b 100644
 --- a/modules/account/account.c
@@ -30,7 +17,7 @@ index d2d782e..fbaea7b 100644
 -			goto out;
 -
 -		err = account_set_auth_pass(acc, pass);
-+		ua_event((struct ua *)account_aor(acc), UA_EVENT_GET_PASSWORD,
++		ua_event((struct ua *)account_aor(acc), UA_EVENT_CUSTOM,
 +			 (struct call *)password, "");
  
 -		mem_deref(pass);
