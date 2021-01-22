@@ -87,6 +87,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
+	-I$(PWD)/mobile-ffmpeg/src/libaom \
 	-I$(PWD)/mobile-ffmpeg/src/libvpx \
 	-I$(PWD)/mobile-ffmpeg/src/ffmpeg \
 	-march=$(MARCH)
@@ -319,7 +320,7 @@ ffmpeg:
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 --disable-x86-64 \
-		--enable-libvpx --enable-x264 --enable-x265
+		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom
 
 install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
@@ -331,6 +332,9 @@ install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/x265/lib/libx265.a $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/libaom/lib/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/cpu-features/lib/libcpu_features.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
