@@ -382,6 +382,7 @@ sed -i -e 's|av_log(context, AV_LOG_INFO, "Android camera capture session was cl
     --enable-libx264 \
     --enable-libx265 \
     --enable-libvpx \
+    --enable-libaom \
     --enable-encoder=libx264 \
     --enable-decoder=h264 \
     --enable-encoder=libx265 \
@@ -390,6 +391,8 @@ sed -i -e 's|av_log(context, AV_LOG_INFO, "Android camera capture session was cl
     --enable-decoder=vp8 \
     --enable-encoder=libvpx_vp9 \
     --enable-decoder=vp9 \
+    --enable-encoder=libaom_av1 \
+    --enable-decoder=libaom_av1 \
     --enable-decoder=rawvideo \
     --enable-indev=android_camera \
     ${SIZE_OPTIONS} \
