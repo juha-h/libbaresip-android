@@ -359,8 +359,8 @@ download-sources:
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
-	git clone https://git.code.sf.net/p/opencore-amr/code amr
-	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc vo-amrwbenc
+	git clone https://github.com/juha-h/opencore-amr.git amr
+	git clone https://github.com/juha-h/opencore-vo-amrwbenc.git vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -d re -p1 < re-patch
