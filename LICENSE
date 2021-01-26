@@ -30,12 +30,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Following of the libraries have their own licenses:
 
-* Apache 2.0: amr
+* Apache 2.0: amr, openssl
 
 * LGPL 2.1: spandsp
 
 * AGPLv4: zrtp
 
-* GNU GPLv2: x264
+* GNU GPLv2: x264, x265
 
 * GNU GPLv3: bcg729
+
+* BSD License 2.0: vpx
+
+* AOMedia: av1
+
