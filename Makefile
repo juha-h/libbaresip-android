@@ -347,7 +347,7 @@ download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
 		ilbc amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp
 	git clone https://github.com/baresip/baresip.git
-	git clone https://github.com/creytiv/rem.git
+	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable openssl
 	wget https://downloads.xiph.org/releases/opus/opus-1.3.1.tar.gz
