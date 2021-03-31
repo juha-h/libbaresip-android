@@ -90,6 +90,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/mobile-ffmpeg/src/libaom \
 	-I$(PWD)/mobile-ffmpeg/src/libvpx \
 	-I$(PWD)/mobile-ffmpeg/src/ffmpeg \
+	-I$(PWD)/mobile-ffmpeg/src/libpng \
 	-march=$(MARCH)
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
@@ -133,7 +134,8 @@ OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
 EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 \
 	g7221 g726 g729 amr zrtp stun turn ice presence contact mwi account \
-	natpmp srtp uuid debug_cmd avcodec avformat vp8 vp9 selfview av1
+	natpmp srtp uuid debug_cmd avcodec avformat vp8 vp9 selfview av1 \
+	snapshot
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -319,8 +321,10 @@ ffmpeg:
 	ANDROID_HOME=/foo/bar \
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
 	./android.sh --enable-gpl --no-archive \
-		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 --disable-x86-64 \
-		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom
+		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
+		--disable-x86-64 \
+		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom \
+		--enable-libpng
 
 install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
@@ -335,6 +339,9 @@ install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/libaom/lib/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
+	cp $(FFMPEG_LIB)/libpng/lib/libpng.a $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/cpu-features/lib/libcpu_features.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
