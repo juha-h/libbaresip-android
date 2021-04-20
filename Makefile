@@ -319,12 +319,11 @@ ffmpeg:
 	cd ffmpeg-kit && \
 	ANDROID_SDK_ROOT=/foo/bar \
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
-	SKIP_ffmpeg_kit=1 \
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
 		--disable-x86-64 \
 		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom \
-		--enable-libpng
+		--enable-libpng --skip-ffmpeg-kit
 
 install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
@@ -367,8 +366,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-#libbaresip: Makefile openssl opus amr spandsp g7221 g729 ilbc webrtc zrtp ffmpeg librem.a libre.a
-libbaresip: Makefile librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 ilbc webrtc zrtp ffmpeg librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
