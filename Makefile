@@ -27,7 +27,7 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	DISABLE_NEON := --disable-neon
 	FFMPEG_ARCH  := arm
 	MARCH        := armv7-a
-	FFMPEG_LIB   := $(PWD)/mobile-ffmpeg/prebuilt/android-arm
+	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm
 	FFMPEG_DIS   := --disable-arm64-v8a
 else
 	TARGET       := aarch64-linux-android
@@ -38,7 +38,7 @@ else
 	DISABLE_NEON :=
 	FFMPEG_ARCH  := aarch64
 	MARCH        := armv8-a
-	FFMPEG_LIB   := $(PWD)/mobile-ffmpeg/prebuilt/android-arm64
+	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm64
 	FFMPEG_DIS   := --disable-arm-v7a
 endif
 
@@ -87,10 +87,10 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/zrtp/include \
 	-I$(PWD)/zrtp/third_party/bnlib \
 	-I$(PWD)/zrtp/third_party/bgaes \
-	-I$(PWD)/mobile-ffmpeg/src/libaom \
-	-I$(PWD)/mobile-ffmpeg/src/libvpx \
-	-I$(PWD)/mobile-ffmpeg/src/ffmpeg \
-	-I$(PWD)/mobile-ffmpeg/src/libpng \
+	-I$(PWD)/ffmpeg-kit/src/libaom \
+	-I$(PWD)/ffmpeg-kit/src/libvpx \
+	-I$(PWD)/ffmpeg-kit/src/ffmpeg \
+	-I$(PWD)/ffmpeg-kit/src/libpng \
 	-march=$(MARCH)
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
@@ -315,11 +315,11 @@ install-zrtp: zrtp
 
 .PHONY: ffmpeg
 ffmpeg:
-	cd mobile-ffmpeg && \
-	rm -rf prebuilt/$(FFMPEG_LIB) && \
-	cp ../android-ffmpeg.sh build && \
-	ANDROID_HOME=/foo/bar \
+	rm -rf $(FFMPEG_LIB) && \
+	cd ffmpeg-kit && \
+	ANDROID_SDK_ROOT=/foo/bar \
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
+	SKIP_ffmpeg_kit=1 \
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
 		--disable-x86-64 \
@@ -349,7 +349,7 @@ install-ffmpeg: ffmpeg
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/include/libavcodec
-	cp $(PWD)/mobile-ffmpeg/src/ffmpeg/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
+	cp $(PWD)/ffmpeg-kit/src/ffmpeg/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
 	cp $(FFMPEG_LIB)/ffmpeg/lib/libavcodec.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/ffmpeg/lib/libavutil.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/ffmpeg/lib/libswresample.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
@@ -367,7 +367,8 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 ilbc webrtc zrtp ffmpeg librem.a libre.a
+#libbaresip: Makefile openssl opus amr spandsp g7221 g729 ilbc webrtc zrtp ffmpeg librem.a libre.a
+libbaresip: Makefile librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -408,7 +409,7 @@ install-all:
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
 		ilbc amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp \
-		mobile-ffmpeg
+		ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
@@ -426,10 +427,11 @@ download-sources:
 	git clone https://github.com/juha-h/opencore-vo-amrwbenc.git vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
-	git clone https://github.com/juha-h/mobile-ffmpeg.git
+	git clone https://github.com/tanersener/ffmpeg-kit.git
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
 	cp -r baresip-g729 baresip/modules/g729
+	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
 
 clean:
 	make distclean -C baresip
@@ -445,4 +447,4 @@ clean:
 	-make distclean -C amr
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
-	rm -rf mobile-ffmpeg/prebuilt
+	rm -rf ffmpeg-kit/prebuilt

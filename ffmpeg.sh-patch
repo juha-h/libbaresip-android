@@ -1,0 +1,24 @@
+*** ffmpeg-kit/scripts/android/ffmpeg.sh	2021-04-19 18:40:08.014429800 +0300
+--- ffmpeg.sh.patched	2021-04-19 18:36:10.633562102 +0300
+***************
+*** 358,363 ****
+--- 358,366 ----
+  FFMPEG_VERSION="v$(get_user_friendly_ffmpeg_version)"
+  ${SED_INLINE} "s/\$version/$FFMPEG_VERSION/g" "${BASEDIR}"/src/"${LIB_NAME}"/ffbuild/version.sh 1>>"${BASEDIR}"/build.log 2>&1 || exit 1
+  
++ # 3. Patch ffmpeg/libavdevice/android_camera.c
++ sed -i -e 's|av_log(context, AV_LOG_INFO, "Android camera capture session was closed.|//|' ${BASEDIR}/src/ffmpeg/libavdevice/android_camera.c
++ 
+  ###################################################################
+  
+  ./configure \
+***************
+*** 391,397 ****
+    ${DEBUG_OPTIONS} \
+    --disable-neon-clobber-test \
+    --disable-programs \
+-   --disable-postproc \
+    --disable-doc \
+    --disable-htmlpages \
+    --disable-manpages \
+--- 394,399 ----
