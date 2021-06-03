@@ -69,7 +69,6 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/bcg729/include \
 	-I$(PWD)/spandsp/src \
 	-I$(PWD)/tiff/libtiff \
-	-I$(PWD)/ilbc \
 	-I$(PWD)/amr/include \
 	-I$(PWD)/vo-amrwbenc/include \
 	-I$(PWD)/webrtc/include \
@@ -85,7 +84,6 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/spandsp/src/.libs \
 	-L$(PWD)/amr/lib \
 	-L$(PWD)/vo-amrwbenc/.libs \
-	-L$(PWD)/ilbc \
 	-L$(PWD)/bcg729/src \
 	-L$(PWD)/zrtp \
 	-L$(PWD)/zrtp/third_party/bnlib \
@@ -117,7 +115,7 @@ COMMON_FLAGS := \
 
 OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
 
-EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus ilbc g711 g722 g7221 g726 \
+EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus g711 g722 g7221 g726 \
 	g729 amr zrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
@@ -218,20 +216,6 @@ install-g729: g729
 	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 	cp bcg729/build/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: ilbc
-ilbc:
-	make clean -C ilbc
-	cd ilbc && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make
-
-.PHONY: install-ilbc
-install-ilbc: ilbc
-	rm -rf $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
-	cp ilbc/libilbc.a $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
-
 .PHONY: amr
 amr: 
 	cd amr && \
@@ -305,7 +289,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 ilbc webrtc zrtp librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc zrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -331,7 +315,7 @@ install-libbaresip: Makefile libbaresip
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-g729 install-ilbc install-amr install-webrtc install-zrtp \
+	install-g729 install-amr install-webrtc install-zrtp \
 	install-libbaresip
 
 install-all-libbaresip:
@@ -345,7 +329,7 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		ilbc amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp
+		amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
@@ -357,7 +341,6 @@ download-sources:
 	git clone https://gitlab.com/libtiff/libtiff.git -b v4.0.10 --single-branch tiff
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
-	git clone https://github.com/juha-h/libilbc.git -b 1.0 --single-branch ilbc
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/juha-h/opencore-amr.git amr
 	git clone https://github.com/juha-h/opencore-vo-amrwbenc.git vo-amrwbenc
@@ -377,7 +360,6 @@ clean:
 	-make distclean -C spandsp
 	-make distclean -C g7221
 	-make clean -C bcg729
-	make clean -C ilbc
 	-make distclean -C amr
 	rm -rf webrtc/obj
 	-make distclean -C zrtp
