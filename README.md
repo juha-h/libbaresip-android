@@ -5,23 +5,13 @@ This project shows how to build libbaresip for Android using Android NDK
 r19 or later that only support clang.  Resulting libbaresip can be used
 in Baresip based Android (Studio) applications.
 
-Currently supported NDKs:
-
-| NDK  | Supported  |
-|------|------------|
-| r21  | Yes        |
-| r20  | Yes        |
-| r19  | Yes        |
-| r18  | No         |
-| ...  | No         |
-
 ## Step 0 - download Android NDK
 
 Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads/
 ```
-or use ndk-bundle that comes with Android Studio 4.1.3 Sdk (tested).
+or use ndk-bundle that comes with Android Studio 4.2.1 Sdk (tested).
 
 ## Step 1 - clone libbaresip-android
 
@@ -55,7 +45,6 @@ After that you should have in libbaresip-android directory a layout like this:
     g7221/
     amr/
     vo-amrwbenc/
-    ilbc/
     webrtc/
     zrtp/
 ```
