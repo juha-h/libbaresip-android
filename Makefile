@@ -42,10 +42,10 @@ endif
 PWD		:= $(shell pwd)
 
 # Toolchain and sysroot
-TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/linux-x86_64
+TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/$(HOST_OS)
 CMAKE_TOOLCHAIN_FILE	:= $(NDK_PATH)/build/cmake/android.toolchain.cmake
 SYSROOT		:= $(TOOLCHAIN)/sysroot
-PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/linux-x86_64/lib/pkgconfig
+PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/$(HOST_OS)/lib/pkgconfig
 
 # Toolchain tools
 PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
