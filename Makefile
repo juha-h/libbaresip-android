@@ -49,13 +49,13 @@ PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/$(HOST_OS)/lib/pkgconfig
 
 # Toolchain tools
 PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
-AR	:= $(TARGET)-ar
+AR	:= llvm-ar
 AS	:= $(CLANG_TARGET)$(API_LEVEL)-clang
 CC	:= $(CLANG_TARGET)$(API_LEVEL)-clang
 CXX	:= $(CLANG_TARGET)$(API_LEVEL)-clang++
-LD	:= $(TARGET)-ld
-RANLIB	:= $(TARGET)-ranlib
-STRIP	:= $(TARGET)-strip
+LD	:= ld.lld
+RANLIB	:= llvm-ranlib
+STRIP	:= llvm-strip
 
 # Compiler and Linker Flags for re, rem, and baresip
 #
