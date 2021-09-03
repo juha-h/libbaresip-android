@@ -9,7 +9,7 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads/
 ```
-or use ndk bundle that comes with latest Android Studio.
+or use ndk-bundle that comes with latest Android Studio (version 2020.3.1 tested).
 
 ## Step 1 - clone libbaresip-android
 
@@ -29,7 +29,25 @@ Download source code to ./libbaresip-android directory:
 ```
 $ make download-sources
 ```
-This will also patch re and baresip as needed by baresip-studio project.
+This will also patch re, baresip, and ffmpeg-kit as needed by baresip-studio project.
+
+After that you should have in libbaresip-android directory a layout like this:
+```
+    baresip/
+    re/
+    rem/
+    openssl/
+    opus/
+    tiff/
+    spandsp/
+    g7221/
+    bcg729/
+    amr/
+    vo-amrwbenc/
+    webrtc/
+    zrtp/
+    ffmpeg-kit/
+```
 
 ## Step 4 - build and install libraries
 
