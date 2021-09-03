@@ -5,11 +5,11 @@ This project shows how to build libbaresip for Android on Debian 11 using Androi
 
 ## Step 0 - download Android NDK
 
-Download and unzip Android NDK r21 for Linux from:
+Download and unzip Android NDK for Linux from:
 ```
-https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+https://developer.android.com/ndk/downloads
 ```
-or use NDK r21 that comes with Android Studio.
+or use NDK (r21 or newer) that comes with Android Studio.
 
 ## Step 1 - clone libbaresip-android
 

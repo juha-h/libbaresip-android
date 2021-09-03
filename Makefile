@@ -1,6 +1,6 @@
 # -------------------- VALUES TO CONFIGURE --------------------
 
-# Path to your Android NDK (must be r19 or higher)
+# Path to your Android NDK (must be r21 or higher)
 # This one finds the latest from /opt/Android/ndk directory
 NDK_PATH  :=  $(shell ls -d -1 /opt/Android/ndk/* | tail -1)
 
