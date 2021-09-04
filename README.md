@@ -50,7 +50,11 @@ After that you should have in libbaresip-android directory a layout like this:
 
 ## Step 4 - build and install libraries
 
-You can build and install the libraries only for a selected architecture with command:
+First (if not already done) install libtool package:
+```
+$ sudo apt-get install libtool
+```
+Then you can build and install the libraries only for a selected architecture with command:
 ```
 $ make install ANDROID_TARGET_ARCH=$ARCH
 ```
