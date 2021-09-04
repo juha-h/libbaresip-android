@@ -1,8 +1,8 @@
 # -------------------- VALUES TO CONFIGURE --------------------
 
-# Path to your Android NDK (must be r19 or higher)
-# This one finds the latest from /opt/Android/ndk directory
-NDK_PATH  :=  $(shell ls -d -1 /opt/Android/ndk/* | tail -1)
+# Path to your Android NDK (must currently be r21)
+# This one finds the latest r21 from /opt/Android/ndk directory
+NDK_PATH  :=  $(shell ls -d -1 /opt/Android/ndk/21* | tail -1)
 
 # Android API level
 API_LEVEL := 24
