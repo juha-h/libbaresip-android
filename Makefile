@@ -1,8 +1,8 @@
 # -------------------- VALUES TO CONFIGURE --------------------
 
-# Path to your Android NDK (must currently be r21)
-# This one finds the latest r21 from /opt/Android/ndk directory
-NDK_PATH  :=  $(shell ls -d -1 /opt/Android/ndk/21* | tail -1)
+# Path to your Android NDK r23
+# This one finds the latest r23 from /opt/Android/ndk directory
+NDK_PATH  :=  $(shell ls -d -1 /opt/Android/ndk/23* | tail -1)
 
 # Android API level
 API_LEVEL := 24
@@ -408,7 +408,7 @@ download-sources:
 	git clone https://github.com/juha-h/opencore-vo-amrwbenc.git vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b 3.0 --single-branch webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
-	git clone https://github.com/tanersener/ffmpeg-kit.git
+	git clone https://github.com/tanersener/ffmpeg-kit.git -b development
 	patch -d re -p1 < re-patch
 	patch -d baresip -p1 < baresip-patch
 	cp -r baresip-g729 baresip/modules/g729
