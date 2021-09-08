@@ -128,8 +128,6 @@ COMMON_FLAGS := \
 	ANDROID=yes \
 	RELEASE=1
 
-OPENSSL_FLAGS := -D__ANDROID_API__=$(API_LEVEL)
-
 EXTRA_MODULES := webrtc_aec opensles dtls_srtp opus g711 g722 \
 	g7221 g726 g729 amr zrtp stun turn ice presence contact mwi account \
 	natpmp srtp uuid debug_cmd avcodec avformat vp8 vp9 selfview av1 \
@@ -142,8 +140,8 @@ default:
 openssl:
 	-make distclean -C openssl
 	cd openssl && \
-	CC=clang ANDROID_NDK=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared $(OPENSSL_FLAGS) && \
-	CC=clang ANDROID_NDK=$(NDK_PATH) PATH=$(PATH) make build_libs
+	ANDROID_NDK_HOME=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared -D__ANDROID_API__=$(API_LEVEL) && \
+	make build_libs
 
 .PHONY: install-openssl
 install-openssl: openssl
