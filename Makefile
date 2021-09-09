@@ -124,7 +124,7 @@ default:
 openssl:
 	-make distclean -C openssl
 	cd openssl && \
-	ANDROID_NDK_HOME=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared -D__ANDROID_API__=$(API_LEVEL) && \
+	ANDROID_NDK_HOME=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
 	make build_libs
 
 .PHONY: install-openssl
