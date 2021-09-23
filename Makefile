@@ -118,7 +118,7 @@ COMMON_FLAGS := \
 	HAVE_LIBPTHREAD= \
 	HAVE_INET_PTON=1 \
 	HAVE_INET6=1 \
-	HAVE_GETIFADDRS= \
+	HAVE_GETIFADDRS=1 \
 	PEDANTIC= \
 	OS=$(OS) \
 	ARCH=$(ARCH) \
@@ -348,7 +348,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc zrtp ffmpeg librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
