@@ -388,8 +388,8 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc master.zip libzrtp-master zrtp \
-		ffmpeg-kit
+		amr vo-amrwbenc webrtc abseil-cpp master.zip libzrtp-master \
+		zrtp ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
@@ -405,6 +405,8 @@ download-sources:
 	git clone https://github.com/juha-h/opencore-amr.git amr
 	git clone https://github.com/juha-h/opencore-vo-amrwbenc.git vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
+	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_03_24 --single-branch
+	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	git clone https://github.com/tanersener/ffmpeg-kit.git -b development
 	patch -d re -p1 < re-patch
