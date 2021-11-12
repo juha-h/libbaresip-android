@@ -50,9 +50,9 @@ After that you should have in libbaresip-android directory a layout like this:
 
 ## Step 4 - build and install libraries
 
-First (if not already done) install libtool package:
+First (if not already done) install cmake and libtool packages:
 ```
-$ sudo apt-get install libtool
+$ sudo apt install cmake libtool
 ```
 Then you can build and install the libraries only for a selected architecture with command:
 ```
