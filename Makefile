@@ -320,7 +320,6 @@ install-all-libbaresip:
 	make install-libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
 	make install-libbaresip ANDROID_TARGET_ARCH=arm64-v8a
 
-.PHONY: install-all
 install-all:
 	make install ANDROID_TARGET_ARCH=armeabi-v7a
 	make install ANDROID_TARGET_ARCH=arm64-v8a
