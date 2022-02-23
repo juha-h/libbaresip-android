@@ -337,14 +337,14 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.0.10 --single-branch tiff
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.3.0 --single-branch tiff
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/juha-h/opencore-amr.git amr
 	git clone https://github.com/juha-h/opencore-vo-amrwbenc.git vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
-	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_03_24 --single-branch
+	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_11_02 --single-branch
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -d re -p1 < re-patch
