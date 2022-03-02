@@ -22,11 +22,23 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	OPENSSL_ARCH := android-arm
 	MARCH        := armv7-a
 else
+ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
 	TARGET       := aarch64-linux-android
 	CLANG_TARGET := $(TARGET)
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm64
 	MARCH        := armv8-a
+else
+ifeq ($(ANDROID_TARGET_ARCH), x86_64)
+	TARGET       := x86_64-linux-android
+	CLANG_TARGET := $(TARGET)
+	ARCH         := x86
+	OPENSSL_ARCH := android-x86_64
+	MARCH        := x86-64
+else
+	exit 1
+endif
+endif
 endif
 
 PLATFORM	:= android-$(API_LEVEL)
