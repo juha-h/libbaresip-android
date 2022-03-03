@@ -7,7 +7,7 @@ NDK_PATH  := /opt/Android/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-st
 # Android API level
 API_LEVEL := 21
 
-# Set default from following values: [armeabi-v7a, arm64-v8a]
+# Set default from following values: [armeabi-v7a, arm64-v8a, x86_64]
 ANDROID_TARGET_ARCH := arm64-v8a
 
 # Directory where libraries and include files are instelled
