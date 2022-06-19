@@ -394,7 +394,7 @@ download-sources:
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
-	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable openssl
+	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable --single-branch openssl
 	wget https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.3.1.tar.gz
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
