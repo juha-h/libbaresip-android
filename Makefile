@@ -360,7 +360,6 @@ download-sources:
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	patch -d re -p1 < re-patch
-	patch -d baresip -p1 < baresip-patch
 	cp -r baresip-g729 baresip/modules/g729
 
 clean:
