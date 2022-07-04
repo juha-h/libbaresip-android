@@ -411,7 +411,6 @@ download-sources:
 	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
 	git clone https://github.com/tanersener/ffmpeg-kit.git -b main
 	patch -d re -p1 < re-patch
-	patch -d baresip -p1 < baresip-patch
 	cp -r baresip-g729 baresip/modules/g729
 	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
 
