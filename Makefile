@@ -125,8 +125,20 @@ COMMON_FLAGS := \
 	ANDROID=yes \
 	RELEASE=1
 
+CMAKE_ANDROID_FLAGS := \
+	-DANDROID=ON \
+	-DCMAKE_SYSTEM_NAME=Android \
+	-DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
+	-DCMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE) \
+	-DANDROID_ABI=${ANDROID_TARGET_ARCH} \
+	-DCMAKE_ANDROID_ARCH_ABI=$(ANDROID_TARGET_ARCH) \
+	-DCMAKE_SKIP_INSTALL_RPATH=ON \
+	-DCMAKE_C_COMPILER=$(CC) \
+	-DCMAKE_CXX_COMPILER=$(CXX) \
+	-DCMAKE_POSITION_INDEPENDENT_CODE=ON
+
 EXTRA_MODULES := webrtc_aecm opensles dtls_srtp opus g711 g722 g7221 g726 \
-	g729 amr zrtp stun turn ice presence contact mwi account natpmp \
+	g729 amr gzrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
 default:
@@ -266,30 +278,21 @@ install-webrtc: webrtc
 	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: zrtp
-zrtp:
-	-make distclean -C zrtp
-	cd zrtp && \
-	./bootstrap.sh && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
-	cd third_party/bnlib/ && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
-	cd ../.. && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make
+.PHONY: gzrtp
+gzrtp:
+	cd ZRTPCPP && \
+	rm -rf build && \
+	mkdir build && \
+	cd build && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	sed -i -e 's/;-lpthread//' CMakeCache.txt && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) VERBOSE=1 make
 
-install-zrtp: zrtp
-	rm -rf $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
-	cp zrtp/third_party/bnlib/libbn.a $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
-	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
+install-gzrtp: gzrtp
+	rm -rf $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
+	cp ZRTPCPP/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	make distclean -C re
@@ -299,7 +302,7 @@ librem.a: Makefile libre.a
 	make distclean -C rem
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc zrtp librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
 	make distclean -C baresip
 	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
 	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
@@ -325,7 +328,7 @@ install-libbaresip: Makefile libbaresip
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-g729 install-amr install-webrtc install-zrtp \
+	install-g729 install-amr install-webrtc install-gzrtp \
 	install-libbaresip
 
 install-all-libbaresip:
@@ -358,7 +361,7 @@ download-sources:
 	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
 	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_11_02 --single-branch
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
-	git clone https://github.com/juha-h/libzrtp.git -b 1.0 --single-branch zrtp
+	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
 
