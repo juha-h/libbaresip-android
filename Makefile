@@ -84,9 +84,7 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/amr/include \
 	-I$(PWD)/vo-amrwbenc/include \
 	-I$(PWD)/webrtc/include \
-	-I$(PWD)/zrtp/include \
-	-I$(PWD)/zrtp/third_party/bnlib \
-	-I$(PWD)/zrtp/third_party/bgaes \
+	-I$(PWD)/ZRTPCPP/zrtp \
 	-march=$(MARCH)
 
 LFLAGS := -L$(SYSROOT)/usr/lib/ \
@@ -97,8 +95,7 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/amr/lib \
 	-L$(PWD)/vo-amrwbenc/.libs \
 	-L$(PWD)/bcg729/src \
-	-L$(PWD)/zrtp \
-	-L$(PWD)/zrtp/third_party/bnlib \
+	-L$(PWD)/ZRTPCPP/build/clients/no_client \
 	-fPIE -pie
 
 COMMON_FLAGS := \
