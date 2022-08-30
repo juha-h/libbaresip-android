@@ -341,7 +341,7 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc abseil-cpp master.zip zrtp
+		amr vo-amrwbenc webrtc abseil-cpp ZRTPCCP
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
@@ -374,5 +374,5 @@ clean:
 	-make distclean -C g7221
 	-make clean -C bcg729
 	-make distclean -C amr
+	rm -rf ZRTPCPP/build
 	rm -rf webrtc/obj
-	-make distclean -C zrtp
