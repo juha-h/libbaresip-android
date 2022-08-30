@@ -81,9 +81,6 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/amr/include \
 	-I$(PWD)/vo-amrwbenc/include \
 	-I$(PWD)/webrtc/include \
-	-I$(PWD)/zrtp/include \
-	-I$(PWD)/zrtp/third_party/bnlib \
-	-I$(PWD)/zrtp/third_party/bgaes \
 	-I$(PWD)/ffmpeg-kit/src/libaom \
 	-I$(PWD)/ffmpeg-kit/src/libvpx \
 	-I$(PWD)/ffmpeg-kit/src/ffmpeg \
@@ -98,8 +95,6 @@ LFLAGS := -L$(SYSROOT)/usr/lib/ \
 	-L$(PWD)/amr/lib \
 	-L$(PWD)/vo-amrwbenc/.libs \
 	-L$(PWD)/bcg729/src \
-	-L$(PWD)/zrtp \
-	-L$(PWD)/zrtp/third_party/bnlib \
 	-fPIE -pie
 
 COMMON_FLAGS := \
@@ -280,31 +275,6 @@ install-webrtc: webrtc
 	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: zrtp
-zrtp:
-	-make distclean -C zrtp
-	cd zrtp && \
-	./bootstrap.sh && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
-	cd third_party/bnlib/ && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	./configure --host=$(TARGET) CFLAGS="$(COMMON_CFLAGS)" && \
-	cd ../.. && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
-	make
-
-install-zrtp: zrtp
-	rm -rf $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
-	cp zrtp/third_party/bnlib/libbn.a $(OUTPUT_DIR)/bn/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
-	cp zrtp/libzrtp.a $(OUTPUT_DIR)/zrtp/lib/$(ANDROID_TARGET_ARCH)
-
 .PHONY: gzrtp
 gzrtp:
 	cd ZRTPCPP && \
@@ -415,8 +385,7 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc abseil-cpp master.zip libzrtp-master \
-		zrtp ffmpeg-kit
+		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
@@ -451,6 +420,6 @@ clean:
 	-make distclean -C g7221
 	-make clean -C bcg729
 	-make distclean -C amr
+	rm -rf ZRTPCPP/build
 	rm -rf webrtc/obj
-	-make distclean -C zrtp
 	rm -rf ffmpeg-kit/prebuilt
