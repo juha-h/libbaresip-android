@@ -85,18 +85,10 @@ CFLAGS := $(COMMON_CFLAGS) \
 	-I$(PWD)/vo-amrwbenc/include \
 	-I$(PWD)/webrtc/include \
 	-I$(PWD)/ZRTPCPP/zrtp \
+	-I$(PWD)/gsm/inc \
 	-march=$(MARCH)
 
-LFLAGS := -L$(SYSROOT)/usr/lib/ \
-	-L$(PWD)/openssl \
-	-L$(PWD)/opus/.libs \
-	-L$(PWD)/g7221/src/.libs \
-	-L$(PWD)/spandsp/src/.libs \
-	-L$(PWD)/amr/lib \
-	-L$(PWD)/vo-amrwbenc/.libs \
-	-L$(PWD)/bcg729/src \
-	-L$(PWD)/ZRTPCPP/build/clients/no_client \
-	-fPIE -pie
+LFLAGS := -fPIE -pie
 
 COMMON_FLAGS := \
 	EXTRA_CFLAGS="$(CFLAGS) -DANDROID" \
@@ -136,7 +128,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
 EXTRA_MODULES := webrtc_aecm opensles dtls_srtp opus g711 g722 g7221 g726 \
-	g729 amr gzrtp stun turn ice presence contact mwi account natpmp \
+	g729 gsm amr gzrtp stun turn ice presence contact mwi account natpmp \
 	srtp uuid debug_cmd
 
 default:
@@ -292,6 +284,17 @@ install-gzrtp: gzrtp
 	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp ZRTPCPP/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: gsm
+gsm:
+	make clean -C gsm && \
+	cd gsm && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make ./lib/libgsm.a $(COMMON_FLAGS)
+
+install-gsm: gsm
+	rm -rf $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
+	cp gsm/lib/libgsm.a $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
+
 libre.a: Makefile
 	make distclean -C re
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C re $(COMMON_FLAGS)
@@ -326,7 +329,7 @@ install-libbaresip: Makefile libbaresip
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-g729 install-amr install-webrtc install-gzrtp \
+	install-g729 install-amr install-webrtc install-gzrtp install-gsm \
 	install-libbaresip
 
 install-all-libbaresip:
@@ -341,7 +344,7 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc abseil-cpp ZRTPCCP
+		amr vo-amrwbenc webrtc abseil-cpp ZRTPCCP gsm
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
@@ -360,8 +363,10 @@ download-sources:
 	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_11_02 --single-branch
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
+	git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
+	cp -r baresip-gsm baresip/modules/gsm
 
 clean:
 	make distclean -C baresip
@@ -374,5 +379,6 @@ clean:
 	-make distclean -C g7221
 	-make clean -C bcg729
 	-make distclean -C amr
-	rm -rf ZRTPCPP/build
 	rm -rf webrtc/obj
+	rm -rf ZRTPCPP/build
+	-make clean -C gsm
