@@ -33,19 +33,20 @@ This will also patch re as needed by baresip-studio project.
 
 After that you should have in libbaresip-android directory a layout like this:
 ```
+    amr/
     baresip/
-    re/
-    rem/
+    bcg729/
+    g7221/
+    gsm/
     openssl/
     opus/
-    tiff/
+    re/
+    rem/
     spandsp/
-    g7221/
-    bcg729/
-    amr/
+    tiff/
     vo-amrwbenc/
     webrtc/
-    zrtp/
+    ZRTPCPP/
 ```
 
 ## Step 4 - build and install libraries
