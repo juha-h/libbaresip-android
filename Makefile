@@ -410,7 +410,7 @@ download-sources:
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
-	git clone https://github.com/tanersener/ffmpeg-kit.git -b main
+	git clone https://github.com/tanersener/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
 	cp -r baresip-gsm baresip/modules/gsm
