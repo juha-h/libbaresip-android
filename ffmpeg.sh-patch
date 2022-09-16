@@ -20,3 +20,16 @@ index 08b4384..cb8d8e9 100755
    --disable-doc \
    --disable-htmlpages \
    --disable-manpages \
+diff --git a/scripts/function.sh b/scripts/function.sh
+index a3dedf6..ebee071 100755
+--- a/scripts/function.sh
++++ b/scripts/function.sh
+@@ -2052,6 +2052,8 @@ downloaded_library_sources() {
+     fi
+   done
+ 
++  sed -i -e 's/if(BUILD_TESTING)/if(0)/' ${BASEDIR}/src/cpu-features/CMakeLists.txt
++
+   for custom_library_index in "${CUSTOM_LIBRARIES[@]}"; do
+     library_name="CUSTOM_LIBRARY_${custom_library_index}_NAME"
+ 
