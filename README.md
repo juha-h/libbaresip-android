@@ -9,7 +9,7 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads
 ```
-or use NDK (r21 or newer) that comes with Android Studio.
+or use NDK (r25 or newer) that comes with Android Studio.
 
 ## Step 1 - clone libbaresip-android
 
