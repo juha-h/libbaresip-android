@@ -176,10 +176,10 @@ tiff:
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
 .PHONY: spandsp
-spandsp:
+spandsp: tiff
 	-make distclean -C spandsp
 	cd spandsp && \
-	./bootstrap.sh && \
+	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
