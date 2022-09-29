@@ -2,7 +2,7 @@
 
 # Path to Android NDK
 # NDK version must match ndkVersion in app/build.gradle
-NDK_PATH  := /opt/Android/Sdk/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-studio/app/build.gradle | sed 's/[^0-9.]*//g')
+NDK_PATH  := /opt/Android/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-studio/app/build.gradle | sed 's/[^0-9.]*//g')
 
 # Android API level
 API_LEVEL := 21
@@ -176,10 +176,10 @@ tiff:
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
 .PHONY: spandsp
-spandsp: tiff
+spandsp:
 	-make distclean -C spandsp
 	cd spandsp && \
-	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
+	./bootstrap.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
