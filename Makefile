@@ -100,6 +100,7 @@ COMMON_FLAGS := \
 	HAVE_LIBRESOLV= \
 	HAVE_RESOLV= \
 	HAVE_PTHREAD=1 \
+	HAVE_EPOLL=1 \
 	HAVE_PTHREAD_RWLOCK=1 \
 	HAVE_LIBPTHREAD= \
 	HAVE_INET_PTON=1 \
@@ -297,27 +298,35 @@ libre.a: Makefile
 	rm -rf build && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
+		$(COMMON_FLAGS) \
+		-DHAVE_EPOLL=1 \
+		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH)" \
 		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
 		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) make
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) VERBOSE=1 make $(COMMON_FLAGS)
 
 librem.a: Makefile libre.a
 	cd rem && \
 	rm -rf build && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
+		$(COMMON_FLAGS) \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) make
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
+#libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
+libbaresip: Makefile librem.a libre.a
 	cd baresip && \
 	rm -rf build && \
-	cmake -B build \
+	mkdir build && \
+	cd build && \
+	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
+		$(COMMON_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
@@ -341,7 +350,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a l
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DMODULES=$(MODULES) && \
-	 cmake --build build --target baresip -j
+	 PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make baresip $(COMMON_FLAGS)
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
@@ -352,7 +361,7 @@ install-libbaresip: Makefile libbaresip
 	cp rem/build/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
-	cp baresip/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
+	cp baresip/build/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/re/include
 	mkdir -p $(OUTPUT_DIR)/re/include
 	cp re/include/* $(OUTPUT_DIR)/re/include
