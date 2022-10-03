@@ -152,11 +152,11 @@ install-openssl: openssl
 opus:
 	-make distclean -C opus
 	cd opus && \
+	rm -rf include_opus && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
-	rm -rf $(PWD)/include/opus && \
-	mkdir -p $(PWD)/include/opus && \
-	cp include/* $(PWD)/include/opus
+	mkdir -p include_opus/opus && \
+	cp include/* include_opus/opus
 
 .PHONY: install-opus
 install-opus: opus
@@ -313,7 +313,7 @@ librem.a: Makefile libre.a
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
 	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) make
 
-libbaresip:
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
 	cd baresip && \
 	rm -rf build && \
 	cmake -B build \
@@ -329,7 +329,7 @@ libbaresip:
 		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
 		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
-		-DOPUS_INCLUDE_DIR=$(PWD)/include \
+		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DGSM_INCLUDE_DIR=$(PWD)/gsm/inc \
 		-DSPANDSP_INCLUDE_DIRS="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
@@ -346,10 +346,10 @@ libbaresip:
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
-	cp re/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
+	cp re/build/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
-	cp rem/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
+	cp rem/build/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	cp baresip/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
