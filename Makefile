@@ -127,9 +127,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_CXX_COMPILER=$(CXX) \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
-EXTRA_MODULES := webrtc_aecm opensles dtls_srtp opus g711 g722 g7221 g726 \
-	g729 gsm amr gzrtp stun turn ice presence contact mwi account natpmp \
-	srtp uuid debug_cmd
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd"
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -154,12 +152,11 @@ install-openssl: openssl
 opus:
 	-make distclean -C opus
 	cd opus && \
-	rm -rf include_opus && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
-	mkdir include_opus && \
-	mkdir include_opus/opus && \
-	cp include/* include_opus/opus
+	rm -rf $(PWD)/include/opus && \
+	mkdir -p $(PWD)/include/opus && \
+	cp include/* $(PWD)/include/opus
 
 .PHONY: install-opus
 install-opus: opus
@@ -296,17 +293,55 @@ install-gsm: gsm
 	cp gsm/lib/libgsm.a $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
-	make distclean -C re
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C re $(COMMON_FLAGS)
+	cd re && \
+	rm -rf build && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) \
+		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
+		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
+	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) make
 
 librem.a: Makefile libre.a
-	make distclean -C rem
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
+	cd rem && \
+	rm -rf build && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) \
+		-Dre_DIR=$(PWD)/re/cmake \
+		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
+		-DRE_INCLUDE_DIR=$(PWD)/re/include \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
+	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) make
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
-	make distclean -C baresip
-	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
-	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
+libbaresip:
+	cd baresip && \
+	rm -rf build && \
+	cmake -B build \
+		$(CMAKE_ANDROID_FLAGS) \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc" \
+		-DSTATIC=ON \
+		-Dre_DIR=$(PWD)/re/cmake \
+		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
+		-DRE_INCLUDE_DIR=$(PWD)/re/include \
+		-DREM_LIBRARY=$(PWD)/rem/build/librem.a \
+		-DREM_INCLUDE_DIR=$(PWD)/rem/include \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include \
+		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
+		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
+		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
+		-DOPUS_INCLUDE_DIR=$(PWD)/include \
+		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
+		-DGSM_INCLUDE_DIR=$(PWD)/gsm/inc \
+		-DSPANDSP_INCLUDE_DIRS="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
+		-DWEBRTC_AECM_INCLUDE_DIRS=$(PWD)/webrtc/include \
+		-DG7221_INCLUDE_DIRS=$(PWD)/g7221/src \
+		-DGZRTP_INCLUDE_DIR="$(PWD)/ZRTPCPP" \
+		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
+		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
+		-DCMAKE_C_COMPILER="clang" \
+		-DCMAKE_CXX_COMPILER="clang++" \
+		-DMODULES=$(MODULES) && \
+	 cmake --build build --target baresip -j
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
