@@ -279,22 +279,20 @@ install-gsm: gsm
 
 libre.a: Makefile
 	cd re && \
-	rm -rf build && mkdir build && cd build && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		$(COMMON_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH)" \
 		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
 		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) VERBOSE=1 make $(COMMON_FLAGS)
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
 
 librem.a: Makefile libre.a
 	cd rem && \
-	rm -rf build && mkdir build && cd build && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		$(COMMON_FLAGS) \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
@@ -303,12 +301,9 @@ librem.a: Makefile libre.a
 
 libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
 	cd baresip && \
-	rm -rf build && \
-	mkdir build && \
-	cd build && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		$(COMMON_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
@@ -379,7 +374,7 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.3.0 --single-branch tiff
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.4.0 --single-branch tiff
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
