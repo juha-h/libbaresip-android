@@ -72,27 +72,13 @@ STRIP	:= llvm-strip
 # Compiler and Linker Flags for re, rem, and baresip
 #
 # NOTE: use -isystem to avoid warnings in system header files
-COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC
-
-CFLAGS := $(COMMON_CFLAGS) \
-	-I$(PWD)/openssl/include \
-	-I$(PWD)/opus/include_opus \
-	-I$(PWD)/g7221/src \
-	-I$(PWD)/bcg729/include \
-	-I$(PWD)/spandsp/src \
-	-I$(PWD)/tiff/libtiff \
-	-I$(PWD)/amr/include \
-	-I$(PWD)/vo-amrwbenc/include \
-	-I$(PWD)/webrtc/include \
-	-I$(PWD)/ZRTPCPP/zrtp \
-	-I$(PWD)/gsm/inc \
-	-march=$(MARCH)
+COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC -march=$(MARCH)
 
 LFLAGS := -fPIE -pie
 
 COMMON_FLAGS := \
-	EXTRA_CFLAGS="$(CFLAGS) -DANDROID" \
-	EXTRA_CXXFLAGS="$(CFLAGS) -DANDROID -DHAVE_PTHREAD" \
+	EXTRA_CFLAGS="$(COMMON_CFLAGS) -DANDROID" \
+	EXTRA_CXXFLAGS="$(COMMON_CFLAGS) -DANDROID -DHAVE_PTHREAD" \
 	EXTRA_LFLAGS="$(LFLAGS)" \
 	SYSROOT=$(SYSROOT)/usr \
 	HAVE_INTTYPES_H=1 \
@@ -100,7 +86,6 @@ COMMON_FLAGS := \
 	HAVE_LIBRESOLV= \
 	HAVE_RESOLV= \
 	HAVE_PTHREAD=1 \
-	HAVE_EPOLL=1 \
 	HAVE_PTHREAD_RWLOCK=1 \
 	HAVE_LIBPTHREAD= \
 	HAVE_INET_PTON=1 \
@@ -111,9 +96,7 @@ COMMON_FLAGS := \
 	ARCH=$(ARCH) \
 	USE_OPENSSL=yes \
 	USE_OPENSSL_DTLS=yes \
-	USE_OPENSSL_SRTP=yes \
-	ANDROID=yes \
-	RELEASE=1
+	USE_OPENSSL_SRTP=yes
 
 CMAKE_ANDROID_FLAGS := \
 	-DANDROID=ON \
@@ -126,7 +109,8 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_SKIP_INSTALL_RPATH=ON \
 	-DCMAKE_C_COMPILER=$(CC) \
 	-DCMAKE_CXX_COMPILER=$(CXX) \
-	-DCMAKE_POSITION_INDEPENDENT_CODE=ON
+	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	-DCMAKE_BUILD_TYPE=Release
 
 MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd"
 
@@ -299,7 +283,6 @@ libre.a: Makefile
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
 		$(COMMON_FLAGS) \
-		-DHAVE_EPOLL=1 \
 		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH)" \
 		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
 		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
@@ -318,8 +301,7 @@ librem.a: Makefile libre.a
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
 
-#libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
-libbaresip: Makefile librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
 	cd baresip && \
 	rm -rf build && \
 	mkdir build && \
