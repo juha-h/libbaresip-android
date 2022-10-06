@@ -69,31 +69,13 @@ STRIP	:= llvm-strip
 # Compiler and Linker Flags for re, rem, and baresip
 #
 # NOTE: use -isystem to avoid warnings in system header files
-COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC
-
-CFLAGS := $(COMMON_CFLAGS) \
-	-I$(PWD)/openssl/include \
-	-I$(PWD)/opus/include_opus \
-	-I$(PWD)/g7221/src \
-	-I$(PWD)/bcg729/include \
-	-I$(PWD)/spandsp/src \
-	-I$(PWD)/tiff/libtiff \
-	-I$(PWD)/amr/include \
-	-I$(PWD)/vo-amrwbenc/include \
-	-I$(PWD)/webrtc/include \
-	-I$(PWD)/ZRTPCPP/zrtp \
-	-I$(PWD)/gsm/inc \
-	-I$(PWD)/ffmpeg-kit/src/libaom \
-	-I$(PWD)/ffmpeg-kit/src/libvpx \
-	-I$(PWD)/ffmpeg-kit/src/ffmpeg \
-	-I$(PWD)/ffmpeg-kit/src/libpng \
-	-march=$(MARCH)
+COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC -march=$(MARCH)
 
 LFLAGS := -fPIE -pie
 
 COMMON_FLAGS := \
-	EXTRA_CFLAGS="$(CFLAGS) -DANDROID" \
-	EXTRA_CXXFLAGS="$(CFLAGS) -DANDROID -DHAVE_PTHREAD" \
+	EXTRA_CFLAGS="$(COMMON_CFLAGS) -DANDROID" \
+	EXTRA_CXXFLAGS="$(COMMON_CFLAGS) -DANDROID -DHAVE_PTHREAD" \
 	EXTRA_LFLAGS="$(LFLAGS)" \
 	SYSROOT=$(SYSROOT)/usr \
 	HAVE_INTTYPES_H=1 \
@@ -105,32 +87,27 @@ COMMON_FLAGS := \
 	HAVE_LIBPTHREAD= \
 	HAVE_INET_PTON=1 \
 	HAVE_INET6=1 \
-	HAVE_GETIFADDRS=1 \
+	HAVE_GETIFADDRS= \
 	PEDANTIC= \
 	OS=$(OS) \
 	ARCH=$(ARCH) \
 	USE_OPENSSL=yes \
 	USE_OPENSSL_DTLS=yes \
-	USE_OPENSSL_SRTP=yes \
-	ANDROID=yes \
-	RELEASE=1
+	USE_OPENSSL_SRTP=yes
 
 CMAKE_ANDROID_FLAGS := \
 	-DANDROID=ON \
+	-DANDROID_PLATFORM=$(API_LEVEL) \
 	-DCMAKE_SYSTEM_NAME=Android \
 	-DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
 	-DCMAKE_TOOLCHAIN_FILE=$(CMAKE_TOOLCHAIN_FILE) \
-	-DANDROID_ABI=${ANDROID_TARGET_ARCH} \
+	-DANDROID_ABI=$(ANDROID_TARGET_ARCH) \
 	-DCMAKE_ANDROID_ARCH_ABI=$(ANDROID_TARGET_ARCH) \
 	-DCMAKE_SKIP_INSTALL_RPATH=ON \
 	-DCMAKE_C_COMPILER=$(CC) \
 	-DCMAKE_CXX_COMPILER=$(CXX) \
-	-DCMAKE_POSITION_INDEPENDENT_CODE=ON
-
-EXTRA_MODULES := webrtc_aecm opensles dtls_srtp opus g711 g722 gsm \
-	g7221 g726 g729 amr gzrtp stun turn ice presence contact mwi account \
-	natpmp srtp uuid debug_cmd avcodec avformat vp8 vp9 selfview av1 \
-	snapshot
+	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+	-DCMAKE_BUILD_TYPE=Release
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -158,8 +135,7 @@ opus:
 	rm -rf include_opus && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
-	mkdir include_opus && \
-	mkdir include_opus/opus && \
+	mkdir -p include_opus/opus && \
 	cp include/* include_opus/opus
 
 .PHONY: install-opus
@@ -342,28 +318,73 @@ install-ffmpeg: ffmpeg
 	cp $(FFMPEG_LIB)/ffmpeg/lib/libpostproc.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
-	make distclean -C re
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C re $(COMMON_FLAGS)
+	cd re && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) \
+		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH)" \
+		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
+		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make re $(COMMON_FLAGS)
 
 librem.a: Makefile libre.a
-	make distclean -C rem
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) make $@ -C rem $(COMMON_FLAGS)
+	cd rem && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) \
+		-Dre_DIR=$(PWD)/re/cmake \
+		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
+		-DRE_INCLUDE_DIR=$(PWD)/re/include \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make rem $(COMMON_FLAGS)
+
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
 libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg librem.a libre.a
-	make distclean -C baresip
-	PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR) PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) CC=$(CC) CXX=$(CXX) \
-	make libbaresip.a -C baresip $(COMMON_FLAGS) STATIC=1 AMR_PATH=$(PWD)/amr AMRWBENC_PATH=$(PWD)/vo-amrwbenc LIBRE_SO=$(PWD)/re LIBREM_PATH=$(PWD)/rem MOD_AUTODETECT= BASIC_MODULES=no EXTRA_MODULES="$(EXTRA_MODULES)"
+	cd baresip && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc" \
+		-DSTATIC=ON \
+		-Dre_DIR=$(PWD)/re/cmake \
+		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
+		-DRE_INCLUDE_DIR=$(PWD)/re/include \
+		-DREM_LIBRARY=$(PWD)/rem/build/librem.a \
+		-DREM_INCLUDE_DIR=$(PWD)/rem/include \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include \
+		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
+		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
+		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
+		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
+		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
+		-DGSM_INCLUDE_DIR=$(PWD)/gsm/inc \
+		-DSPANDSP_INCLUDE_DIRS="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
+		-DWEBRTC_AECM_INCLUDE_DIRS=$(PWD)/webrtc/include \
+		-DG7221_INCLUDE_DIRS=$(PWD)/g7221/src \
+		-DGZRTP_INCLUDE_DIR=$(PWD)/ZRTPCPP \
+		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
+		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
+		-DFFMPEG_INCLUDE_DIRS="$(PWD)/ffmpeg-kit/src/libaom;$(PWD)/ffmpeg-kit/src/libvpx;$(PWD)/ffmpeg-kit/src/ffmpeg;$(PWD)/ffmpeg-kit/src/libpng" \
+		-DVPX_INCLUDE_DIRS=$(PWD)/ffmpeg-kit/src/libvpx \
+		-DAOM_INCLUDE_DIRS=$(PWD)/ffmpeg-kit/src/libaom \
+		-DPNG_INCLUDE_DIRS=$(PWD)/ffmpeg-kit/src/libpng \
+		-DCMAKE_C_COMPILER="clang" \
+		-DCMAKE_CXX_COMPILER="clang++" \
+		-DMODULES=$(MODULES) && \
+	 PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make VERBOSE=1 baresip $(COMMON_FLAGS)
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
-	cp re/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
+	cp re/build/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
-	cp rem/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
+	cp rem/build/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
-	cp baresip/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
+	cp baresip/build/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/re/include
 	mkdir -p $(OUTPUT_DIR)/re/include
 	cp re/include/* $(OUTPUT_DIR)/re/include
@@ -399,7 +420,7 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.3.0 --single-branch tiff
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.4.0 --single-branch tiff
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
