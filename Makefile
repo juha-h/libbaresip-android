@@ -15,6 +15,9 @@ OUTPUT_DIR := /usr/src/baresip-studio/distribution
 
 # -------------------- GENERATED VALUES --------------------
 
+CPU_COUNT	:= $(shell nproc)
+PWD		:= $(shell pwd)
+
 ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	TARGET       := arm-linux-androideabi
 	CLANG_TARGET := armv7a-linux-androideabi
@@ -50,8 +53,6 @@ endif
 ifeq ($(OS),darwin)
 	HOST_OS   := darwin-x86_64
 endif
-
-PWD		:= $(shell pwd)
 
 # Toolchain and sysroot
 TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/$(HOST_OS)
@@ -321,7 +322,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a l
 		-DSPANDSP_INCLUDE_DIRS="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
 		-DWEBRTC_AECM_INCLUDE_DIRS=$(PWD)/webrtc/include \
 		-DG7221_INCLUDE_DIRS=$(PWD)/g7221/src \
-		-DGZRTP_INCLUDE_DIR="$(PWD)/ZRTPCPP" \
+		-DGZRTP_INCLUDE_DIR=$(PWD)/ZRTPCPP \
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
 		-DCMAKE_C_COMPILER="clang" \
