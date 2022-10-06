@@ -3,13 +3,15 @@ libbaresip-android
 
 This project shows how to build libbaresip for Android on Debian 11 using Android NDK. Resulting libbaresip can be used in Baresip based Android (Studio) applications.
 
-## Step 0 - download Android NDK
+## Step 0 - prerequisites
 
-Download and unzip Android NDK r23 for Linux from:
+Download and unzip Android NDK r25 for Linux from:
 ```
-https://dl.google.com/android/repository/android-ndk-r23-linux.zip
+https://dl.google.com/android/repository/android-ndk-r25-linux.zip
 ```
-or use NDK r23 that comes with Android Studio.
+or use NDK r25 that comes with Android Studio.
+
+Install libtool and upgrade cmake from bullseye-backports (it needs to be 3.19 or higher). 
 
 ## Step 1 - clone libbaresip-android
 
@@ -19,9 +21,11 @@ $ git clone https://github.com/juha-h/libbaresip-android.git
 ```
 This creates libbaresip-android directory containing Makefile.
 
+Go to libbaresip-android directory and checkout video branch.
+
 ## Step 2 - edit Makefile
 
-Go to ./libbaresip-android directory and edit Makefile. You need to set (or check) the variables listed in VALUES TO CONFIGURE section.
+You need to set (or check) the variables listed in VALUES TO CONFIGURE section.
 
 ## Step 3 - download source code
 
@@ -31,31 +35,29 @@ $ make download-sources
 ```
 This will also patch re, baresip, and ffmpeg-kit as needed by baresip-studio project.
 
-After that you should have in libbaresip-android directory a layout like this:
+After that you should have in libbaresip-android directory these source directories:
 ```
-    baresip/
-    re/
-    rem/
-    openssl/
-    opus/
-    tiff/
-    spandsp/
-    g7221/
-    bcg729/
-    amr/
-    vo-amrwbenc/
-    webrtc/
-    zrtp/
-    ffmpeg-kit/
+    abseil-cpp
+    amr
+    baresip
+    bcg729
+    ffmpeg-kit
+    g7221
+    gsm
+    openssl
+    opus
+    re
+    rem
+    spandsp
+    tiff
+    vo-amrwbenc
+    webrtc
+    ZRTPCPP
 ```
 
 ## Step 4 - build and install libraries
 
-First (if not already done) install libtool package:
-```
-$ sudo apt-get install libtool
-```
-Then you can build and install the libraries only for a selected architecture with command:
+Build and install the libraries only for a selected architecture with command:
 ```
 $ make install ANDROID_TARGET_ARCH=$ARCH
 ```
