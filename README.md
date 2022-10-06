@@ -5,11 +5,11 @@ This project shows how to build libbaresip for Android on Debian 11 using Androi
 
 ## Step 0 - prerequisites
 
-Download and unzip Android NDK r25 for Linux from:
+Download and unzip Android NDK for Linux from:
 ```
-https://dl.google.com/android/repository/android-ndk-r25-linux.zip
+https://developer.android.com/ndk/downloads
 ```
-or use NDK r25 that comes with Android Studio.
+or use NDK (r25b or newer) that comes with Android Studio.
 
 Install libtool and upgrade cmake from bullseye-backports (it needs to be 3.19 or higher). 
 
@@ -29,7 +29,7 @@ You need to set (or check) the variables listed in VALUES TO CONFIGURE section.
 
 ## Step 3 - download source code
 
-Download source code to ./libbaresip-android directory:
+Download source code:
 ```
 $ make download-sources
 ```
