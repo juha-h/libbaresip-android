@@ -366,7 +366,7 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc abseil-cpp ZRTPCCP gsm
+		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP gsm
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
