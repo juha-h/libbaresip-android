@@ -284,12 +284,9 @@ libre.a: Makefile
 	cmake --version && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH)" \
-		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
-		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
+		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH);$(PWD)/openssl" \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
-		-DOPENSSL_USE_STATIC_LIBS=TRUE \
-		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
+		-DOPENSSL_USE_STATIC_LIBS=TRUE && \
 	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
 
 librem.a: Makefile libre.a
