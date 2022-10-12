@@ -320,13 +320,13 @@ install-ffmpeg: ffmpeg
 libre.a: Makefile
 	cd re && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake --version && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH)" \
-		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
-		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
-		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make re $(COMMON_FLAGS)
+		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH);$(PWD)/openssl" \
+		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
+		-DOPENSSL_USE_STATIC_LIBS=TRUE && \
+	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
 
 librem.a: Makefile libre.a
 	cd rem && \
@@ -346,16 +346,14 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg lib
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc" \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
 		-DREM_LIBRARY=$(PWD)/rem/build/librem.a \
 		-DREM_INCLUDE_DIR=$(PWD)/rem/include \
-		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include \
-		-DOPENSSL_CRYPTO_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libcrypto.a \
-		-DOPENSSL_SSL_LIBRARY=$(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)/libssl.a \
+		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \

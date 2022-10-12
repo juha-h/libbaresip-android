@@ -11,7 +11,10 @@ https://developer.android.com/ndk/downloads
 ```
 or use NDK (r25b or newer) that comes with Android Studio.
 
-Install libtool and upgrade cmake from bullseye-backports (it needs to be 3.19 or higher). 
+Install the following Debian packages:
+
+apt install wget make libtool m4 automake pkg-config
+apt install -t bullseye-backports cmake
 
 ## Step 1 - clone libbaresip-android
 
