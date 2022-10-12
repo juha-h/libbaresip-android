@@ -1,8 +1,8 @@
 diff --git a/src/sip/auth.c b/src/sip/auth.c
-index 1357cad..21e9c3c 100644
+index 70681e4..f341312 100644
 --- a/src/sip/auth.c
 +++ b/src/sip/auth.c
-@@ -161,7 +161,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
+@@ -166,7 +166,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
  			goto out;
  	}
  	else {
@@ -13,16 +13,3 @@ index 1357cad..21e9c3c 100644
  			err = EAUTH;
  			goto out;
  		}
-diff --git a/src/sipreg/reg.c b/src/sipreg/reg.c
-index 16467ef..baf0a7a 100644
---- a/src/sipreg/reg.c
-+++ b/src/sipreg/reg.c
-@@ -381,7 +381,7 @@ int sipreg_register(struct sipreg **regp, struct sip *sip, const char *reg_uri,
- 
- 	reg->sip     = mem_ref(sip);
- 	reg->expires = expires;
--	reg->rwait   = 90;
-+	reg->rwait   = 20;
- 	reg->resph   = resph ? resph : dummy_handler;
- 	reg->arg     = arg;
- 	reg->regid   = regid;
