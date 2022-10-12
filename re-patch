@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7d14a96..0f32a73 100644
+index 7d14a96..151c8e0 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -518,7 +518,9 @@ if(ZLIB_FOUND)
@@ -33,6 +33,29 @@ index 7d14a96..0f32a73 100644
  ##############################################################################
  #
  # Static target libre.a
+@@ -603,7 +592,7 @@ configure_file(packaging/libre.pc.in libre.pc @ONLY)
+ # Install section
+ #
+ 
+-install(TARGETS re-shared re
++install(TARGETS re
+   LIBRARY
+     DESTINATION ${CMAKE_INSTALL_LIBDIR}
+     COMPONENT Libraries
+@@ -616,13 +605,6 @@ install(TARGETS re-shared re
+     COMPONENT Development
+ )
+ 
+-install(TARGETS re-shared
+-  LIBRARY
+-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-    NAMELINK_ONLY
+-    COMPONENT Development
+-)
+-
+ install(FILES cmake/re-config.cmake
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/re
+   COMPONENT Development
 diff --git a/cmake/re-config.cmake b/cmake/re-config.cmake
 index fffe23a..9554e7e 100644
 --- a/cmake/re-config.cmake
