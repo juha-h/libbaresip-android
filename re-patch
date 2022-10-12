@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7d14a96..4e53565 100644
+index 7d14a96..0f32a73 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -518,7 +518,9 @@ if(ZLIB_FOUND)
@@ -13,6 +13,26 @@ index 7d14a96..4e53565 100644
  endif()
  
  if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+@@ -558,19 +560,6 @@ target_include_directories(re-objs PRIVATE .)
+ target_include_directories(re-objs PRIVATE include ${OPENSSL_INCLUDE_DIR})
+ 
+ 
+-##############################################################################
+-#
+-# Shared target libre.[so|dll|dylib]
+-#
+-
+-add_library(re-shared SHARED $<TARGET_OBJECTS:re-objs>)
+-target_link_libraries(re-shared PRIVATE ${LINKLIBS})
+-set_target_properties(re-shared PROPERTIES VERSION
+-  ${PROJECT_SOVERSION}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
+-set_target_properties(re-shared PROPERTIES SOVERSION ${PROJECT_SOVERSION})
+-set_target_properties(re-shared PROPERTIES OUTPUT_NAME "re")
+-
+-
+ ##############################################################################
+ #
+ # Static target libre.a
 diff --git a/cmake/re-config.cmake b/cmake/re-config.cmake
 index fffe23a..9554e7e 100644
 --- a/cmake/re-config.cmake
