@@ -1,8 +1,37 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 7d14a96..4e53565 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -518,7 +518,9 @@ if(ZLIB_FOUND)
+ endif()
+ 
+ if(USE_OPENSSL)
+-  list(APPEND LINKLIBS OpenSSL::SSL OpenSSL::Crypto)
++  message(STATUS "******** appending ${OPENSSL_SSL_LIBRARY}")
++  message(STATUS "******** appending ${OPENSSL_CRYPTO_LIBRARY}")
++  list(APPEND LINKLIBS ${OPENSSL_SSL_LIBRARY} ${OPENSSL_CRYPTO_LIBRARY})
+ endif()
+ 
+ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+diff --git a/cmake/re-config.cmake b/cmake/re-config.cmake
+index fffe23a..9554e7e 100644
+--- a/cmake/re-config.cmake
++++ b/cmake/re-config.cmake
+@@ -101,6 +101,9 @@ if(WIN32)
+ endif()
+ 
+ if(USE_OPENSSL)
++  message(STATUS "******** Using OPENSSL")
++  message(STATUS "******** crypto ${OPENSSL_CRYPTO_LIBRARY}")
++  message(STATUS "******** ssl ${OPENSSL_SSL_LIBRARY}")
+   list(APPEND RE_DEFINITIONS
+     -DUSE_DTLS
+     -DUSE_OPENSSL
 diff --git a/src/sip/auth.c b/src/sip/auth.c
-index 1357cad..21e9c3c 100644
+index 70681e4..f341312 100644
 --- a/src/sip/auth.c
 +++ b/src/sip/auth.c
-@@ -161,7 +161,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
+@@ -166,7 +166,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
  			goto out;
  	}
  	else {
