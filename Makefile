@@ -280,7 +280,7 @@ ffmpeg:
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
-		--disable-x86-64 --enable-android-media-codec=yes \
+		--disable-x86-64 --enable-android-media-codec \
 		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom \
 		--enable-libpng --skip-ffmpeg-kit
 
