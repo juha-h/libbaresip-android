@@ -375,7 +375,7 @@ download-sources:
 	mv opus-1.3.1 opus
 	git clone https://gitlab.com/libtiff/libtiff.git -b v4.4.0 --single-branch tiff
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
-	git clone https://github.com/juha-h/libg7221.git -b 2.0 --single-branch g7221
+	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
