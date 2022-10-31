@@ -122,7 +122,7 @@ default:
 openssl:
 	-make distclean -C openssl
 	cd openssl && \
-	ANDROID_NDK_HOME=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
+	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
 	make build_libs
 
 .PHONY: install-openssl
@@ -368,7 +368,7 @@ download-sources:
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
-	git clone https://github.com/openssl/openssl.git -b OpenSSL_1_1_1-stable --single-branch openssl
+	git clone https://github.com/openssl/openssl.git -b openssl-3.0 --single-branch openssl
 	wget https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.3.1.tar.gz
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
