@@ -319,13 +319,12 @@ install-ffmpeg: ffmpeg
 libre.a: Makefile
 	cd re && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
-	cmake --version && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH);$(PWD)/openssl" \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DOPENSSL_USE_STATIC_LIBS=TRUE && \
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
+	cmake --build . --target re -j
 
 librem.a: Makefile libre.a
 	cd rem && \
