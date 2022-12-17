@@ -296,7 +296,7 @@ librem.a: Makefile libre.a
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make $(COMMON_FLAGS)
+	cmake --build . --target rem -j
 
 libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
 	cd baresip && \
