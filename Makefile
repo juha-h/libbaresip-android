@@ -334,7 +334,7 @@ librem.a: Makefile libre.a
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make rem $(COMMON_FLAGS)
+	cmake --build . --target rem -j
 
 MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
