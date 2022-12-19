@@ -338,7 +338,7 @@ librem.a: Makefile libre.a
 
 MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg librem.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
