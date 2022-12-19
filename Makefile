@@ -298,7 +298,7 @@ librem.a: Makefile libre.a
 		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
 	cmake --build . --target rem -j
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -324,7 +324,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp librem.a l
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DMODULES=$(MODULES) && \
-	 PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make baresip $(COMMON_FLAGS)
+	cmake --build . --target baresip -j
 
 install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
