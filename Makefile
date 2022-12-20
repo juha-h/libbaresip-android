@@ -254,7 +254,7 @@ gzrtp:
 	cmake .. $(CMAKE_ANDROID_FLAGS) && \
 	sed -i -e 's/;-lpthread//' CMakeCache.txt && \
 	cmake .. $(CMAKE_ANDROID_FLAGS) && \
-	CC="$(CC) --sysroot $(SYSROOT)" PATH=$(PATH) VERBOSE=1 make
+	cmake --build . -j
 
 install-gzrtp: gzrtp
 	rm -rf $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
