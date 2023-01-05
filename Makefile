@@ -284,7 +284,6 @@ libre.a: Makefile
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH);$(PWD)/openssl" \
-		-DUSE_UNIXSOCK=OFF \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
@@ -340,6 +339,9 @@ install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/include
 	mkdir -p $(OUTPUT_DIR)/re/include
 	cp re/include/* $(OUTPUT_DIR)/re/include
+	rm -rf $(OUTPUT_DIR)/re/cmake
+	mkdir -p $(OUTPUT_DIR)/re/cmake
+	cp re/cmake/re-config.cmake $(OUTPUT_DIR)/re/cmake
 	rm -rf $(OUTPUT_DIR)/rem/include
 	mkdir $(OUTPUT_DIR)/rem/include
 	cp rem/include/* $(OUTPUT_DIR)/rem/include
