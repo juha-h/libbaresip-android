@@ -383,6 +383,9 @@ install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/include
 	mkdir -p $(OUTPUT_DIR)/re/include
 	cp re/include/* $(OUTPUT_DIR)/re/include
+	rm -rf $(OUTPUT_DIR)/re/cmake
+	mkdir -p $(OUTPUT_DIR)/re/cmake
+	cp re/cmake/re-config.cmake $(OUTPUT_DIR)/re/cmake
 	rm -rf $(OUTPUT_DIR)/rem/include
 	mkdir $(OUTPUT_DIR)/rem/include
 	cp rem/include/* $(OUTPUT_DIR)/rem/include
