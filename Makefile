@@ -66,7 +66,7 @@ LD	:= ld.lld
 RANLIB	:= llvm-ranlib
 STRIP	:= llvm-strip
 
-# Compiler and Linker Flags for re, rem, and baresip
+# Compiler and Linker Flags for re and baresip
 #
 # NOTE: use -isystem to avoid warnings in system header files
 COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC -march=$(MARCH)
@@ -325,20 +325,9 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
-librem.a: Makefile libre.a
-	cd rem && \
-	rm -rf build && rm -rf .cache && mkdir build && cd build && \
-	cmake .. \
-		$(CMAKE_ANDROID_FLAGS) \
-		-Dre_DIR=$(PWD)/re/cmake \
-		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
-		-DRE_INCLUDE_DIR=$(PWD)/re/include \
-		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include && \
-	cmake --build . --target rem -j
-
 MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg librem.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -348,8 +337,6 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg lib
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
-		-DREM_LIBRARY=$(PWD)/rem/build/librem.a \
-		-DREM_INCLUDE_DIR=$(PWD)/rem/include \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
@@ -374,9 +361,6 @@ install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	cp re/build/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
-	cp rem/build/librem.a $(OUTPUT_DIR)/rem/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
 	cp baresip/build/libbaresip.a $(OUTPUT_DIR)/baresip/lib/$(ANDROID_TARGET_ARCH)
@@ -386,9 +370,6 @@ install-libbaresip: Makefile libbaresip
 	rm -rf $(OUTPUT_DIR)/re/cmake
 	mkdir -p $(OUTPUT_DIR)/re/cmake
 	cp re/cmake/re-config.cmake $(OUTPUT_DIR)/re/cmake
-	rm -rf $(OUTPUT_DIR)/rem/include
-	mkdir $(OUTPUT_DIR)/rem/include
-	cp rem/include/* $(OUTPUT_DIR)/rem/include
 	rm -rf $(OUTPUT_DIR)/baresip/include
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
@@ -408,10 +389,9 @@ install-all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re rem openssl opus* tiff spandsp g7221 bcg729 \
+	rm -fr baresip re openssl opus* tiff spandsp g7221 bcg729 \
 		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP gsm ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
-	git clone https://github.com/baresip/rem.git
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/openssl/openssl.git -b openssl-3.0 --single-branch openssl
 	wget https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.3.1.tar.gz
@@ -437,7 +417,6 @@ download-sources:
 
 clean:
 	make distclean -C baresip
-	make distclean -C rem
 	make distclean -C re
 	-make distclean -C openssl
 	-make distclean -C opus
