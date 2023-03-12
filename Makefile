@@ -113,7 +113,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd"
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -278,6 +278,19 @@ install-gsm: gsm
 	mkdir -p $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
 	cp gsm/lib/libgsm.a $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: sndfile
+sndfile:
+	cd sndfile && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . --target sndfile -j
+
+install-sndfile: sndfile
+	rm -rf $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+
 libre.a: Makefile
 	cd re && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
@@ -287,7 +300,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -308,6 +321,8 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp libre.a
 		-DGZRTP_INCLUDE_DIR=$(PWD)/ZRTPCPP \
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
+		-DSNDFILE_INCLUDE_DIRS="$(PWD)/sndfile/include" \
+		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DMODULES=$(MODULES) && \
@@ -365,6 +380,7 @@ download-sources:
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
+	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
 	cp -r baresip-gsm baresip/modules/gsm
@@ -382,3 +398,4 @@ clean:
 	rm -rf webrtc/obj
 	rm -rf ZRTPCPP/build
 	-make clean -C gsm
+	rm -rf sndfile/build
