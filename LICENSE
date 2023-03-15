@@ -36,7 +36,7 @@ Following of the libraries have their own licenses:
 
 * AGPLv4: zrtp
 
-* GNU GPLv2: x264, x265
+* GNU GPLv2: x264, x265, sndfile
 
 * GNU GPLv3: bcg729
 
