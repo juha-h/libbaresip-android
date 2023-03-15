@@ -272,6 +272,19 @@ install-gsm: gsm
 	mkdir -p $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
 	cp gsm/lib/libgsm.a $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: sndfile
+sndfile:
+	cd sndfile && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. \
+		$(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . --target sndfile -j
+
+install-sndfile: sndfile
+	rm -rf $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: ffmpeg
 ffmpeg:
 	rm -rf $(FFMPEG_LIB) && \
@@ -325,9 +338,9 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
-MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ffmpeg libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -348,6 +361,8 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp ffmpeg lib
 		-DGZRTP_INCLUDE_DIR=$(PWD)/ZRTPCPP \
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
+		-DSNDFILE_INCLUDE_DIRS="$(PWD)/sndfile/include" \
+		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
 		-DFFMPEG_INCLUDE_DIRS="$(PWD)/ffmpeg-kit/src/libaom;$(PWD)/ffmpeg-kit/src/libvpx;$(PWD)/ffmpeg-kit/src/ffmpeg;$(PWD)/ffmpeg-kit/src/libpng" \
 		-DVPX_INCLUDE_DIRS=$(PWD)/ffmpeg-kit/src/libvpx \
 		-DAOM_INCLUDE_DIRS=$(PWD)/ffmpeg-kit/src/libaom \
@@ -409,6 +424,7 @@ download-sources:
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
+	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/tanersener/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
@@ -428,4 +444,5 @@ clean:
 	rm -rf webrtc/obj
 	rm -rf ZRTPCPP/build
 	-make clean -C gsm
+	rm -rf sndfile/build
 	rm -rf ffmpeg-kit/prebuilt
