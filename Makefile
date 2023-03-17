@@ -395,7 +395,7 @@ install-all-libbaresip:
 
 install: install-openssl install-opus install-spandsp install-g7221 \
 	install-g729 install-amr install-webrtc install-gzrtp install-gsm \
-	install-ffmpeg install-libbaresip
+	install-sndfile install-ffmpeg install-libbaresip
 
 .PHONY: install-all
 install-all:
