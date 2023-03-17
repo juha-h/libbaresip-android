@@ -347,7 +347,7 @@ install-libbaresip: Makefile libbaresip
 
 install: install-openssl install-opus install-spandsp install-g7221 \
 	install-g729 install-amr install-webrtc install-gzrtp install-gsm \
-	install-libbaresip
+	install-sndfile install-libbaresip
 
 install-all-libbaresip:
 	make install-libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
