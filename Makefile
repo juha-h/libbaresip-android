@@ -335,6 +335,7 @@ libre.a: Makefile
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH);$(PWD)/openssl" \
+		-DOPENSSL_VERSION_MAJOR=3 \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
