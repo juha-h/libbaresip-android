@@ -364,7 +364,7 @@ download-sources:
 		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP gsm sndfile
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/re.git
-	git clone https://github.com/openssl/openssl.git -b openssl-3.0 --single-branch openssl
+	git clone https://github.com/openssl/openssl.git -b openssl-3.1.0 --single-branch openssl
 	wget https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.3.1.tar.gz
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
