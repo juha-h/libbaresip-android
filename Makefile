@@ -427,7 +427,7 @@ download-sources:
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
-	git clone https://github.com/tanersener/ffmpeg-kit.git -b development --single-branch
+	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
 	cp -r baresip-gsm baresip/modules/gsm
