@@ -322,7 +322,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile li
 		-DGZRTP_INCLUDE_DIR=$(PWD)/ZRTPCPP \
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
-		-DSNDFILE_INCLUDE_DIRS="$(PWD)/sndfile/include" \
+		-DSNDFILE_INCLUDE_DIR="$(PWD)/sndfile/include" \
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
