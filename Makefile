@@ -7,7 +7,7 @@ NDK_PATH  := /opt/Android/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-st
 # Android API level
 API_LEVEL := 24
 
-# Set default from following values: [armeabi-v7a, arm64-v8a]
+# Set default from following values: [armeabi-v7a, arm64-v8a, x86_64]
 ANDROID_TARGET_ARCH := arm64-v8a
 
 # Directory where libraries and include files are instelled
@@ -23,21 +23,37 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	CLANG_TARGET := armv7a-linux-androideabi
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm
+	MARCH        := armv7-a
 	VPX_TARGET   := armv7-android-gcc
 	DISABLE_NEON := --disable-neon
-	MARCH        := armv7-a
 	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm
-	FFMPEG_DIS   := --disable-arm64-v8a
+	FFMPEG_DIS   := --disable-arm64-v8a --disable-x86-64 
 else
+ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
 	TARGET       := aarch64-linux-android
 	CLANG_TARGET := $(TARGET)
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm64
+	MARCH        := armv8-a
 	VPX_TARGET   := arm64-android-gcc
 	DISABLE_NEON :=
-	MARCH        := armv8-a
 	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm64
-	FFMPEG_DIS   := --disable-arm-v7a
+	FFMPEG_DIS   := --disable-arm-v7a --disable-x86-64
+else
+ifeq ($(ANDROID_TARGET_ARCH), x86_64)
+	TARGET       := x86_64-linux-android
+	CLANG_TARGET := $(TARGET)
+	ARCH         := x86
+	OPENSSL_ARCH := android-x86_64
+	MARCH        := x86-64
+	VPX_TARGET   := x86_64-android-gcc
+	DISABLE_NEON :=
+	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-x86_64
+	FFMPEG_DIS   := --disable-arm-v7a --disable-arm64-v8a
+else
+	exit 1
+endif
+endif
 endif
 
 PLATFORM	:= android-$(API_LEVEL)
@@ -293,7 +309,7 @@ ffmpeg:
 	ANDROID_NDK_ROOT=$(NDK_PATH) \
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
-		--disable-x86-64 --enable-android-media-codec \
+		--enable-android-media-codec \
 		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom \
 		--enable-libpng --skip-ffmpeg-kit
 
