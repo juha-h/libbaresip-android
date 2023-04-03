@@ -113,7 +113,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;contact;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
