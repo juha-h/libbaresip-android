@@ -370,7 +370,7 @@ download-sources:
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.4.0 --single-branch tiff
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.5.0 --single-branch tiff
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
