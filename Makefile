@@ -59,9 +59,10 @@ TOOLCHAIN	:= $(NDK_PATH)/toolchains/llvm/prebuilt/$(HOST_OS)
 CMAKE_TOOLCHAIN_FILE	:= $(NDK_PATH)/build/cmake/android.toolchain.cmake
 SYSROOT		:= $(TOOLCHAIN)/sysroot
 PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/$(HOST_OS)/lib/pkgconfig
+BREW_BIN	:= $(shell brew --prefix)/bin
 
 # Toolchain tools
-PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
+PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin:/usr/local/bin:$(BREW_BIN)
 AR	:= llvm-ar
 AS	:= $(CLANG_TARGET)$(API_LEVEL)-clang
 CC	:= $(CLANG_TARGET)$(API_LEVEL)-clang
