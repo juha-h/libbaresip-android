@@ -61,7 +61,7 @@ SYSROOT		:= $(TOOLCHAIN)/sysroot
 PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/$(HOST_OS)/lib/pkgconfig
 
 # Toolchain tools
-PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
+PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
 AR	:= llvm-ar
 AS	:= $(CLANG_TARGET)$(API_LEVEL)-clang
 CC	:= $(CLANG_TARGET)$(API_LEVEL)-clang
