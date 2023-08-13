@@ -50,6 +50,7 @@ After that you should have in libbaresip-android directory these source director
     opus
     re
     rem
+    sndfile
     spandsp
     tiff
     vo-amrwbenc
