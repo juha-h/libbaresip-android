@@ -318,7 +318,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile li
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
-		-DCODEC2_LIBRARY=$(PWD)/codec2/build/src/libcodec2.a \
+		-DCODEC2_LIBRARY=$(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)/libcodec2.a \ \
 		-DSPANDSP_INCLUDE_DIRS="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
 		-DWEBRTC_AECM_INCLUDE_DIRS=$(PWD)/webrtc/include \
 		-DG7221_INCLUDE_DIRS=$(PWD)/g7221/src \
@@ -384,7 +384,6 @@ download-sources:
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
-git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
