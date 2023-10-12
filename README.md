@@ -46,7 +46,7 @@ After that you should have in libbaresip-android directory these source director
     bcg729
     ffmpeg-kit
     g7221
-    gsm
+    codec2
     openssl
     opus
     re

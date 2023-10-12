@@ -277,16 +277,18 @@ install-gzrtp: gzrtp
 	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp ZRTPCPP/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: gsm
-gsm:
-	make clean -C gsm && \
-	cd gsm && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make ./lib/libgsm.a $(COMMON_FLAGS)
+.PHONY: codec2
+codec2:
+	cd codec2 && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. -DBUILD_SHARED_LIBS=OFF $(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . --target codec2 -j && \
+	cp ../src/codec2.h codec2
 
-install-gsm: gsm
-	rm -rf $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
-	cp gsm/lib/libgsm.a $(OUTPUT_DIR)/gsm/lib/$(ANDROID_TARGET_ARCH)
+install-codec2: codec2
+	rm -rf $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
+	cp codec2/build/src/libcodec2.a $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: sndfile
 sndfile:
@@ -355,7 +357,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
-MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;gsm;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
 libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ffmpeg libre.a
 	cd baresip && \
@@ -371,7 +373,8 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ff
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
-		-DGSM_INCLUDE_DIR=$(PWD)/gsm/inc \
+		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
+		-DCODEC2_LIBRARY=$(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)/libcodec2.a \
 		-DSPANDSP_INCLUDE_DIRS="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
 		-DWEBRTC_AECM_INCLUDE_DIRS=$(PWD)/webrtc/include \
 		-DG7221_INCLUDE_DIRS=$(PWD)/g7221/src \
@@ -412,7 +415,7 @@ install-all-libbaresip:
 	make install-libbaresip ANDROID_TARGET_ARCH=arm64-v8a
 
 install: install-openssl install-opus install-spandsp install-g7221 \
-	install-g729 install-amr install-webrtc install-gzrtp install-gsm \
+	install-g729 install-amr install-webrtc install-gzrtp install-codec2 \
 	install-sndfile install-ffmpeg install-libbaresip
 
 .PHONY: install-all
@@ -423,7 +426,7 @@ install-all:
 .PHONY: download-sources
 download-sources:
 	rm -fr baresip re openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP gsm sndfile \
+		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP codec2 sndfile \
 		ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/re.git
@@ -442,12 +445,11 @@ download-sources:
 	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_11_02 --single-branch
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
-	git clone https://github.com/juha-h/libgsm.git -b master --single-branch gsm
+	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
 	cp -r baresip-g729 baresip/modules/g729
-	cp -r baresip-gsm baresip/modules/gsm
 	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
 
 clean:
@@ -462,6 +464,6 @@ clean:
 	-make distclean -C amr
 	rm -rf webrtc/obj
 	rm -rf ZRTPCPP/build
-	-make clean -C gsm
+	rm -rf codec2/build
 	rm -rf sndfile/build
 	rm -rf ffmpeg-kit/prebuilt
