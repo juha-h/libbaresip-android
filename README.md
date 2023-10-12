@@ -45,7 +45,7 @@ After that you should have in libbaresip-android directory these source director
     baresip
     bcg729
     g7221
-    gsm
+    codec2
     openssl
     opus
     re
