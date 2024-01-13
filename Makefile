@@ -113,7 +113,9 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+
+APP_MODULES := "g729"
 
 default:
 	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
@@ -332,6 +334,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile li
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
+		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
 		-DMODULES=$(MODULES) && \
 	cmake --build . --target baresip -j
 
@@ -389,7 +392,6 @@ download-sources:
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	patch -d re -p1 < re-patch
-	cp -r baresip-g729 baresip/modules/g729
 
 clean:
 	make distclean -C baresip
