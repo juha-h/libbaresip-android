@@ -357,7 +357,9 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
-MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;g729;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
+MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
+
+APP_MODULES := "g729"
 
 libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ffmpeg libre.a
 	cd baresip && \
@@ -395,6 +397,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ff
 		-DPNG_LIBRARY=$(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)/libpng.a \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
+		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
 		-DMODULES=$(MODULES) && \
 	 PATH=$(PATH) RANLIB=$(RANLIB) AR=$(AR) make baresip $(COMMON_FLAGS)
 
@@ -454,7 +457,6 @@ download-sources:
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
-	cp -r baresip-g729 baresip/modules/g729
 	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
 
 clean:
