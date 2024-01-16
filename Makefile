@@ -366,7 +366,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ff
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(FFMPEG_LIB)/ffmpeg;$(FFMPEG_LIB)/libvpx;$(FFMPEG_LIB)/libaom;$(FFMPEG_LIB)/libpng" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
@@ -388,13 +388,6 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ff
 		-DGZRTP_INCLUDE_DIRS="$(PWD)/ZRTPCPP;$(PWD)/zZRTPCPP/zrtp;$(PWD)/ZRTPCPP/srtp" \
 		-DSNDFILE_INCLUDE_DIR="$(PWD)/sndfile/include" \
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
-		-DFFMPEG_INCLUDE_DIRS="$(PWD)/ffmpeg-kit/src/libaom;$(PWD)/ffmpeg-kit/src/libvpx;$(PWD)/ffmpeg-kit/src/ffmpeg;$(PWD)/ffmpeg-kit/src/libpng" \
-		-DVPX_INCLUDE_DIR=$(PWD)/ffmpeg-kit/src/libvpx \
-		-DVPX_LIBRARY=$(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)/libvpx.a \
-		-DAOM_INCLUDE_DIR=$(PWD)/ffmpeg-kit/src/libaom \
-		-DAOM_LIBRARY=$(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)/libaom.a \
-		-DPNG_INCLUDE_DIR=$(PWD)/ffmpeg-kit/src/libpng \
-		-DPNG_LIBRARY=$(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)/libpng.a \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
