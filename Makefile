@@ -386,7 +386,7 @@ download-sources:
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
-	git clone https://github.com/abseil/abseil-cpp.git -b lts_2021_11_02 --single-branch
+	git clone https://github.com/abseil/abseil-cpp.git -b lts_2024_01_16 --single-branch
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
