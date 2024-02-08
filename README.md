@@ -49,7 +49,6 @@ After that you should have in libbaresip-android directory these source director
     openssl
     opus
     re
-    rem
     sndfile
     spandsp
     tiff
