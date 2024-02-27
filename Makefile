@@ -303,6 +303,28 @@ install-sndfile: sndfile
 	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: vpx
+vpx:
+	cd vpx && \
+	rm -rf obj && \
+	cd jni && \
+	./libvpx/configure --target=$(VPX_TARGET) --as=yasm \
+	--enable-external-build --enable-static --enable-realtime-only \
+	--enable-vp8 --enable-vp9 --enable-vp9-highbitdepth \
+	--enable-runtime-cpu-detect --enable-better-hw-compatibility \
+	--enable-small \
+	--disable-examples --disable-debug --disable-gprof --disable-gcov \
+	--disable-unit-tests --disable-tools --disable-docs --disable-webm-io \
+	--disable-internal-stats --disable-debug-libs && \
+	$(NDK_PATH)/ndk-build \
+	APP_PLATFORM=$(PLATFORM) APP_ABI=$(ANDROID_TARGET_ARCH) \
+	APP_OPTIM=release
+
+install-vpx: vpx
+	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	cp vpx/obj/local/$(ANDROID_TARGET_ARCH)/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: ffmpeg
 ffmpeg:
 	rm -rf $(FFMPEG_LIB) && \
@@ -312,13 +334,10 @@ ffmpeg:
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
 		--enable-android-media-codec \
-		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom \
+		--enable-x264 --enable-x265 --enable-libaom \
 		--enable-libpng --skip-ffmpeg-kit
 
 install-ffmpeg: ffmpeg
-	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/libvpx/lib/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/x264/lib/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
@@ -361,12 +380,12 @@ MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;
 
 APP_MODULES := "g729"
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ffmpeg libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile vpx ffmpeg libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(FFMPEG_LIB)/ffmpeg;$(FFMPEG_LIB)/libvpx;$(FFMPEG_LIB)/libaom;$(FFMPEG_LIB)/libpng" \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(FFMPEG_LIB)/ffmpeg;$(FFMPEG_LIB)/libaom;$(FFMPEG_LIB)/libpng" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
@@ -387,6 +406,8 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ff
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DSNDFILE_INCLUDE_DIR="$(PWD)/sndfile/include" \
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
+		-DVPX_INCLUDE_DIR="$(PWD)/vpx/jni/libvpx" \
+		-DVPX_LIBRARY="$(PWD)/vpx/local/$(ANDROID_TARGET_ARCH)/libvpx.a" \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
@@ -416,7 +437,7 @@ install-all-libbaresip:
 
 install: install-openssl install-opus install-spandsp install-g7221 \
 	install-g729 install-amr install-webrtc install-gzrtp install-codec2 \
-	install-sndfile install-ffmpeg install-libbaresip
+	install-sndfile install-ffmpeg install-vpx install-libbaresip
 
 .PHONY: install-all
 install-all:
@@ -427,7 +448,7 @@ install-all:
 download-sources:
 	rm -fr baresip re openssl opus* tiff spandsp g7221 bcg729 \
 		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP codec2 sndfile \
-		ffmpeg-kit
+		vpx ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/openssl/openssl.git -b openssl-3.1.0 --single-branch openssl
