@@ -317,8 +317,7 @@ vpx:
 	--disable-unit-tests --disable-tools --disable-docs --disable-webm-io \
 	--disable-internal-stats --disable-debug-libs && \
 	$(NDK_PATH)/ndk-build \
-	APP_PLATFORM=$(PLATFORM) APP_ABI=$(ANDROID_TARGET_ARCH) \
-	APP_OPTIM=release
+		APP_PLATFORM=$(PLATFORM) APP_ABI=$(ANDROID_TARGET_ARCH)
 
 install-vpx: vpx
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
@@ -468,6 +467,8 @@ download-sources:
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
+	git clone https://github.com/juha-h/libvpx-build.git -b master --single-branch vpx
+	git clone https://github.com/webmproject/libvpx.git -b v1.13.1 -b v1.13.1 --single-branch vpx/jni/libvpx
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
 	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
@@ -486,4 +487,6 @@ clean:
 	rm -rf ZRTPCPP/build
 	rm -rf codec2/build
 	rm -rf sndfile/build
+	rm -rf vpx/obj
+	find vpx/jni -not -name 'Android.mk' -not -name 'Application.mk' -delete
 	rm -rf ffmpeg-kit/prebuilt
