@@ -332,7 +332,7 @@ aom:
 	cd aom/build && \
 	find . -mindepth 1 ! -regex '^./cmake\(/.*\)?' -delete && \
 	cmake .. $(CMAKE_ANDROID_FLAGS)	-DAOM_TARGET_CPU=$(AOM_TARGET_CPU) \
-		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_SHARED_LIBS=OFF -DENABLE_DOCS=0 \
 		-DENABLE_TESTS=0 -DENABLE_EXAMPLES=0 -DENABLE_TOOLS=0 && \
 	cmake --build . -j$(CPU_COUNT)
 
