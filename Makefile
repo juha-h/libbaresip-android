@@ -315,7 +315,7 @@ vpx:
 	--enable-external-build --enable-static --enable-realtime-only \
 	--enable-vp8 --enable-vp9 --enable-vp9-highbitdepth \
 	--enable-runtime-cpu-detect --enable-better-hw-compatibility \
-	--enable-small \
+	--enable-small --disable-neon-dotprod \
 	--disable-examples --disable-debug --disable-gprof --disable-gcov \
 	--disable-unit-tests --disable-tools --disable-docs --disable-webm-io \
 	--disable-internal-stats --disable-debug-libs && \
@@ -484,7 +484,7 @@ download-sources:
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/juha-h/libvpx-build.git -b master --single-branch vpx
-	git clone https://github.com/webmproject/libvpx.git -b v1.13.1 -b v1.13.1 --single-branch vpx/jni/libvpx
+	git clone https://github.com/webmproject/libvpx.git -b v1.14.0 -b v1.13.1 --single-branch vpx/jni/libvpx
 	git clone https://aomedia.googlesource.com/aom -b v3.8.1 --single-branch
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
