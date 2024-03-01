@@ -392,7 +392,7 @@ MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;
 
 APP_MODULES := "g729"
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile vpx aom ffmpeg libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp codec2 sndfile vpx aom ffmpeg libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
