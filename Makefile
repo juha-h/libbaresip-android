@@ -305,7 +305,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp codec2 sndfile libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
