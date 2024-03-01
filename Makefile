@@ -25,6 +25,7 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	OPENSSL_ARCH := android-arm
 	MARCH        := armv7-a
 	VPX_TARGET   := armv7-android-gcc
+	AOM_TARGET_CPU   := armv7
 	DISABLE_NEON := --disable-neon
 	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm
 	FFMPEG_DIS   := --disable-arm64-v8a --disable-x86-64 
@@ -36,6 +37,7 @@ ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
 	OPENSSL_ARCH := android-arm64
 	MARCH        := armv8-a
 	VPX_TARGET   := arm64-android-gcc
+	AOM_TARGET_CPU   := arm64
 	DISABLE_NEON :=
 	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm64
 	FFMPEG_DIS   := --disable-arm-v7a --disable-x86-64
@@ -47,6 +49,7 @@ ifeq ($(ANDROID_TARGET_ARCH), x86_64)
 	OPENSSL_ARCH := android-x86_64
 	MARCH        := x86-64
 	VPX_TARGET   := x86_64-android-gcc
+	AOM_TARGET_CPU   := x86_64
 	DISABLE_NEON :=
 	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-x86_64
 	FFMPEG_DIS   := --disable-arm-v7a --disable-arm64-v8a
@@ -303,6 +306,41 @@ install-sndfile: sndfile
 	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: vpx
+vpx:
+	cd vpx && \
+	rm -rf obj && \
+	cd jni && \
+	./libvpx/configure --target=$(VPX_TARGET) --as=yasm \
+	--enable-external-build --enable-static --enable-realtime-only \
+	--enable-vp8 --enable-vp9 --enable-vp9-highbitdepth \
+	--enable-runtime-cpu-detect --enable-better-hw-compatibility \
+	--enable-small --disable-neon-dotprod \
+	--disable-examples --disable-debug --disable-gprof --disable-gcov \
+	--disable-unit-tests --disable-tools --disable-docs --disable-webm-io \
+	--disable-internal-stats --disable-debug-libs && \
+	$(NDK_PATH)/ndk-build \
+		APP_PLATFORM=$(PLATFORM) APP_ABI=$(ANDROID_TARGET_ARCH)
+
+install-vpx: vpx
+	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	cp vpx/obj/local/$(ANDROID_TARGET_ARCH)/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: aom
+aom:
+	cd aom/build && \
+	find . -mindepth 1 ! -regex '^./cmake\(/.*\)?' -delete && \
+	cmake .. $(CMAKE_ANDROID_FLAGS)	-DAOM_TARGET_CPU=$(AOM_TARGET_CPU) \
+		-DBUILD_SHARED_LIBS=OFF -DENABLE_DOCS=0 \
+		-DENABLE_TESTS=0 -DENABLE_EXAMPLES=0 -DENABLE_TOOLS=0 && \
+	cmake --build . -j$(CPU_COUNT)
+
+install-aom: aom
+	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	cp aom/build/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: ffmpeg
 ffmpeg:
 	rm -rf $(FFMPEG_LIB) && \
@@ -312,22 +350,15 @@ ffmpeg:
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
 		--enable-android-media-codec \
-		--enable-libvpx --enable-x264 --enable-x265 --enable-libaom \
-		--enable-libpng --skip-ffmpeg-kit
+		--enable-x264 --enable-x265 --enable-libpng --skip-ffmpeg-kit
 
 install-ffmpeg: ffmpeg
-	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/libvpx/lib/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/x264/lib/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/x265/lib/libx265.a $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/libaom/lib/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
 	cp $(FFMPEG_LIB)/libpng/lib/libpng.a $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
@@ -361,12 +392,12 @@ MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;
 
 APP_MODULES := "g729"
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ffmpeg libre.a
+libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile vpx aom ffmpeg libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(FFMPEG_LIB)/ffmpeg;$(FFMPEG_LIB)/libvpx;$(FFMPEG_LIB)/libaom;$(FFMPEG_LIB)/libpng" \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(FFMPEG_LIB)/ffmpeg;$(FFMPEG_LIB)/libpng" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
@@ -387,6 +418,10 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp sndfile ff
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DSNDFILE_INCLUDE_DIR="$(PWD)/sndfile/include" \
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
+		-DVPX_INCLUDE_DIR="$(PWD)/vpx/jni/libvpx" \
+		-DVPX_LIBRARY="$(PWD)/vpx/local/$(ANDROID_TARGET_ARCH)/libvpx.a" \
+		-DAOM_INCLUDE_DIR="$(PWD)/aom" \
+		-DAOM_LIBRARY="$(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)/libaom.a" \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
@@ -416,7 +451,7 @@ install-all-libbaresip:
 
 install: install-openssl install-opus install-spandsp install-g7221 \
 	install-g729 install-amr install-webrtc install-gzrtp install-codec2 \
-	install-sndfile install-ffmpeg install-libbaresip
+	install-sndfile install-ffmpeg install-vpx install-aom install-libbaresip
 
 .PHONY: install-all
 install-all:
@@ -427,7 +462,7 @@ install-all:
 download-sources:
 	rm -fr baresip re openssl opus* tiff spandsp g7221 bcg729 \
 		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP codec2 sndfile \
-		ffmpeg-kit
+		vpx aom ffmpeg-kit
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/openssl/openssl.git -b openssl-3.1.0 --single-branch openssl
@@ -447,6 +482,9 @@ download-sources:
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
+	git clone https://github.com/juha-h/libvpx-build.git -b master --single-branch vpx
+	git clone https://github.com/webmproject/libvpx.git -b v1.14.0 -b v1.13.1 --single-branch vpx/jni/libvpx
+	git clone https://aomedia.googlesource.com/aom -b v3.8.1 --single-branch
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
 	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
@@ -465,4 +503,7 @@ clean:
 	rm -rf ZRTPCPP/build
 	rm -rf codec2/build
 	rm -rf sndfile/build
+	rm -rf vpx/obj
+	find vpx/jni -not -name 'Android.mk' -not -name 'Application.mk' -delete
+	find aom/build -mindepth 1 ! -regex '^aom/build/cmake\(/.*\)?' -delete
 	rm -rf ffmpeg-kit/prebuilt
