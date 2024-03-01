@@ -9,7 +9,7 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads
 ```
-or use NDK (r25b or newer) that comes with Android Studio.
+or use NDK (r26c or newer) that comes with Android Studio.
 
 Install the following Debian packages:
 
@@ -36,12 +36,13 @@ Download source code:
 ```
 $ make download-sources
 ```
-This will also patch re, baresip, and ffmpeg-kit as needed by baresip-studio project.
+This will also patch re and ffmpeg-kit as needed by baresip-studio project.
 
 After that you should have in libbaresip-android directory these source directories:
 ```
     abseil-cpp
     amr
+    aom
     baresip
     bcg729
     ffmpeg-kit
@@ -50,10 +51,10 @@ After that you should have in libbaresip-android directory these source director
     openssl
     opus
     re
-    rem
     spandsp
     tiff
     vo-amrwbenc
+    vpx
     webrtc
     ZRTPCPP
 ```
