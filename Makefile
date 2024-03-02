@@ -142,7 +142,7 @@ vo-amrwbenc:
 	make install
 	rm -rf $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH) 
 	mkdir -p $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
-	cp vo-amrwbenc/.libs/libvo-amrwbenc.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
+	cp vo-amrwbenc/.libs/libvo-amrwbenc.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwbenc.a
 
 .PHONY: codec2
 codec2:
