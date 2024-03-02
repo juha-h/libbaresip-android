@@ -120,7 +120,7 @@ APP_MODULES := "g729"
 default: all
 
 .PHONY: amr
-amr:	vo-amrwbenc
+amr:
 	cd amr && \
 	rm -rf lib include && \
 	autoreconf --install && \
@@ -128,11 +128,6 @@ amr:	vo-amrwbenc
 	make clean && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	make install
-	cp amr/amrnb/.libs/libopencore-amrnb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrnb.a
-	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
-
-.PHONY: vo-amrwbenc
-vo-amrwbenc:
 	cd vo-amrwbenc && \
 	rm -rf include && \
 	autoreconf --install && \
@@ -142,6 +137,8 @@ vo-amrwbenc:
 	make install
 	rm -rf $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH) 
 	mkdir -p $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
+	cp amr/amrnb/.libs/libopencore-amrnb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrnb.a
+	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
 	cp vo-amrwbenc/.libs/libvo-amrwbenc.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwbenc.a
 
 .PHONY: codec2
