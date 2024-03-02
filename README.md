@@ -44,8 +44,8 @@ After that you should have in libbaresip-android directory these source director
     amr
     baresip
     bcg729
-    g7221
     codec2
+    g7221
     openssl
     opus
     re
@@ -54,18 +54,18 @@ After that you should have in libbaresip-android directory these source director
     tiff
     vo-amrwbenc
     webrtc
-    ZRTPCPP
+    zrtpcpp
 ```
 
 ## Step 4 - build and install libraries
 
 Build and install the libraries only for a selected architecture with command:
 ```
-$ make install ANDROID_TARGET_ARCH=$ARCH
+$ make libbaresip ANDROID_TARGET_ARCH=$ARCH
 ```
 by replacing $ARCH with armeabi-v7a or arm64-v8a.
 
 Or you can build and install the libraries for all architectures with command:
 ```
-$ make install-all
+$ make all
 ```

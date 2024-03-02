@@ -117,8 +117,90 @@ MODULES := "webrtc_aecm;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;
 
 APP_MODULES := "g729"
 
-default:
-	make libbaresip ANDROID_TARGET_ARCH=$(ANDROID_TARGET_ARCH)
+default: all
+
+.PHONY: amr
+amr:	vo-amrwbenc
+	cd amr && \
+	rm -rf lib include && \
+	autoreconf --install && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC --prefix=$(PWD)/amr && \
+	make clean && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
+	make install
+	cp amr/amrnb/.libs/libopencore-amrnb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrnb.a
+	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
+
+.PHONY: vo-amrwbenc
+vo-amrwbenc:
+	cd vo-amrwbenc && \
+	rm -rf include && \
+	autoreconf --install && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CFLAGS=-fPIC CXXFLAGS=-fPIC --prefix=$(PWD)/vo-amrwbenc && \
+	make clean && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
+	make install
+	rm -rf $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH) 
+	mkdir -p $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
+	cp vo-amrwbenc/.libs/libvo-amrwbenc.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: codec2
+codec2:
+	cd codec2 && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. -DBUILD_SHARED_LIBS=OFF $(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . --target codec2 -j$(CPU_COUNT) && \
+	cp ../src/codec2.h codec2
+	rm -rf $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
+	cp codec2/build/src/libcodec2.a $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: g729
+g729:
+	-make clean -C bcg729
+	cd  bcg729/build && \
+	find . -maxdepth 1 ! -name CMakeLists.txt -type f -delete && \
+	rm -rf build CMakeFiles include src && \
+	cmake .. -DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
+		-DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
+		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
+		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_SKIP_INSTALL_RPATH=ON && \
+	cmake --build . --target bcg729-static -j$(CPU_COUNT)
+	rm -rf $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+	cp bcg729/build/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: g7221
+g7221:
+	-make distclean -C g7221
+	cd g7221 && \
+	libtoolize --force && \
+	autoreconf --install && \
+	autoconf && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
+	ac_cv_func_malloc_0_nonnull=yes \
+	./configure --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
+	make
+	rm -rf $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+	cp g7221/src/.libs/libg722_1.a $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: gzrtp
+gzrtp:
+	cd zrtpcpp && \
+	rm -rf build && \
+	mkdir build && \
+	cd build && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	sed -i -e 's/;-lpthread//' CMakeCache.txt && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . -j$(CPU_COUNT)
+	rm -rf $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
+	cp zrtpcpp/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: openssl
 openssl:
@@ -126,9 +208,6 @@ openssl:
 	cd openssl && \
 	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared no-tests -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
 	make build_libs
-
-.PHONY: install-openssl
-install-openssl: openssl
 	rm -rf $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
 	cp openssl/libcrypto.a \
@@ -145,12 +224,30 @@ opus:
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	mkdir -p include_opus/opus && \
 	cp include/* include_opus/opus
-
-.PHONY: install-opus
-install-opus: opus
 	rm -rf $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
 	cp opus/.libs/libopus.a $(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: sndfile
+sndfile:
+	cd sndfile && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . --target sndfile -j$(CPU_COUNT)
+	rm -rf $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: spandsp
+spandsp: tiff
+	-make distclean -C spandsp
+	cd spandsp && \
+	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
+	rm -rf $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
+	cp spandsp/src/.libs/libspandsp.a $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: tiff
 tiff:
@@ -160,140 +257,14 @@ tiff:
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
-.PHONY: spandsp
-spandsp: tiff
-	-make distclean -C spandsp
-	cd spandsp && \
-	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
-
-.PHONY: install-spandsp
-install-spandsp: spandsp
-	rm -rf $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
-	cp spandsp/src/.libs/libspandsp.a $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: g7221
-g7221:
-	-make distclean -C g7221
-	cd g7221 && \
-	libtoolize --force && \
-	autoreconf --install && \
-	autoconf && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
-	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
-	CC="$(CC) --sysroot $(SYSROOT)" \
-	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
-	make
-
-.PHONY: install-g7221
-install-g7221: g7221
-	rm -rf $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
-	cp g7221/src/.libs/libg722_1.a $(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: g729
-g729:
-	-make clean -C bcg729
-	cd  bcg729/build && \
-	find . -maxdepth 1 ! -name CMakeLists.txt -type f -delete && \
-	rm -rf build CMakeFiles include src && \
-	cmake .. -DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
-		-DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
-		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
-		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_SKIP_INSTALL_RPATH=ON && \
-	cmake --build . --target bcg729-static -j
-
-.PHONY: install-g729
-install-g729: g729
-	rm -rf $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
-	cp bcg729/build/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: amr
-amr: 
-	cd amr && \
-	rm -rf lib include && \
-	autoreconf --install && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC --prefix=$(PWD)/amr && \
-	make clean && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
-	make install
-
-.PHONY: vo-amrwbenc
-vo-amrwbenc:
-	cd vo-amrwbenc && \
-	rm -rf include && \
-	autoreconf --install && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CFLAGS=-fPIC CXXFLAGS=-fPIC --prefix=$(PWD)/vo-amrwbenc && \
-	make clean && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
-	make install
-
-.PHONY: install-amr
-install-amr: amr vo-amrwbenc
-	rm -rf $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)
-	cp amr/amrnb/.libs/libopencore-amrnb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrnb.a
-	cp amr/amrwb/.libs/libopencore-amrwb.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwb.a
-	cp vo-amrwbenc/.libs/libvo-amrwbenc.a $(OUTPUT_DIR)/amr/lib/$(ANDROID_TARGET_ARCH)/libamrwbenc.a
-
 .PHONY: webrtc
 webrtc:
 	cd webrtc && \
 	rm -rf obj && \
 	$(NDK_PATH)/ndk-build APP_PLATFORM=android-$(API_LEVEL)
-
-.PHONY: install-webrtc
-install-webrtc: webrtc
 	rm -rf $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: gzrtp
-gzrtp:
-	cd ZRTPCPP && \
-	rm -rf build && \
-	mkdir build && \
-	cd build && \
-	cmake .. $(CMAKE_ANDROID_FLAGS) && \
-	sed -i -e 's/;-lpthread//' CMakeCache.txt && \
-	cmake .. $(CMAKE_ANDROID_FLAGS) && \
-	cmake --build . -j
-
-install-gzrtp: gzrtp
-	rm -rf $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
-	cp ZRTPCPP/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: codec2
-codec2:
-	cd codec2 && \
-	rm -rf build && rm -rf .cache && mkdir build && cd build && \
-	cmake .. -DBUILD_SHARED_LIBS=OFF $(CMAKE_ANDROID_FLAGS) && \
-	cmake --build . --target codec2 -j && \
-	cp ../src/codec2.h codec2
-
-install-codec2: codec2
-	rm -rf $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
-	cp codec2/build/src/libcodec2.a $(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: sndfile
-sndfile:
-	cd sndfile && \
-	rm -rf build && rm -rf .cache && mkdir build && cd build && \
-	cmake .. \
-		$(CMAKE_ANDROID_FLAGS) && \
-	cmake --build . --target sndfile -j
-
-install-sndfile: sndfile
-	rm -rf $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
-	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	cd re && \
@@ -303,20 +274,21 @@ libre.a: Makefile
 		-DCMAKE_FIND_ROOT_PATH="$(NDK_PATH);$(PWD)/openssl" \
 		-DOPENSSL_VERSION_MAJOR=3 \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
-	cmake --build . --target re -j
+	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp codec2 sndfile libre.a
+libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp webrtc libre.a	
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
+		-DDCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
 		-DSTATIC=ON \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
-		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
+		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
+		-DOPENSSL_INCLUDE_DIR=$(PWD)/openssl/include \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
@@ -327,7 +299,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp codec2 snd
 		-DWEBRTC_AECM_LIBRARY=$(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)/libwebrtc.a \
 		-DG7221_INCLUDE_DIR=$(PWD)/g7221/src \
 		-DG7221_LIBRARY=$(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)/libg722_1.a \
-		-DGZRTP_INCLUDE_DIR=$(PWD)/ZRTPCPP \
+		-DGZRTP_INCLUDE_DIR=$(PWD)/zrtpcpp \
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
 		-DSNDFILE_INCLUDE_DIR="$(PWD)/sndfile/include" \
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
@@ -335,9 +307,7 @@ libbaresip: Makefile openssl opus amr spandsp g7221 g729 webrtc gzrtp codec2 snd
 		-DCMAKE_CXX_COMPILER="clang++" \
 		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
 		-DMODULES=$(MODULES) && \
-	cmake --build . --target baresip -j
-
-install-libbaresip: Makefile libbaresip
+	cmake --build . --target baresip -j$(CPU_COUNT)
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
 	cp re/build/libre.a $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
@@ -354,55 +324,46 @@ install-libbaresip: Makefile libbaresip
 	mkdir $(OUTPUT_DIR)/baresip/include
 	cp baresip/include/baresip.h $(OUTPUT_DIR)/baresip/include
 
-install: install-openssl install-opus install-spandsp install-g7221 \
-	install-g729 install-amr install-webrtc install-gzrtp install-codec2 \
-	install-sndfile install-libbaresip
-
-install-all-libbaresip:
-	make install-libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
-	make install-libbaresip ANDROID_TARGET_ARCH=arm64-v8a
-
-.PHONY: install-all
-install-all:
-	make install ANDROID_TARGET_ARCH=armeabi-v7a
-	make install ANDROID_TARGET_ARCH=arm64-v8a
+all:
+	make libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
+	make libbaresip ANDROID_TARGET_ARCH=arm64-v8a
 
 .PHONY: download-sources
 download-sources:
-	rm -fr baresip re openssl opus* tiff spandsp g7221 bcg729 \
-		amr vo-amrwbenc webrtc abseil-cpp ZRTPCPP codec2 sndfile
+	rm -fr abseil-cpp amr baresip bcg729 codec2 g7221 openssl opus* \
+		re sndfile spandsp tiff vo-amrwbenc webrtc zrtpcpp
+	git clone https://github.com/abseil/abseil-cpp.git -b lts_2024_01_16 --single-branch
+	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
-	git clone https://github.com/baresip/re.git
+	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
+	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
+	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/openssl/openssl.git -b openssl-3.1.0 --single-branch openssl
 	wget https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.3.1.tar.gz
 	tar zxf opus-1.3.1.tar.gz
 	rm opus-1.3.1.tar.gz
 	mv opus-1.3.1 opus
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.5.0 --single-branch tiff
-	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
-	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
-	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
-	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
-	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
-	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
-	git clone https://github.com/abseil/abseil-cpp.git -b lts_2024_01_16 --single-branch
-	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
-	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch
-	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
+	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
+	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.5.0 --single-branch tiff
+	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
+	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
+	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
+	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	patch -d re -p1 < re-patch
 
 clean:
+	-make distclean -C amr
 	make distclean -C baresip
-	make distclean -C re
-	-make distclean -C openssl
-	-make distclean -C opus
-	-make distclean -C tiff
-	-make distclean -C spandsp
+	rm -rf codec2/build
 	-make distclean -C g7221
 	-make clean -C bcg729
-	-make distclean -C amr
-	rm -rf webrtc/obj
-	rm -rf ZRTPCPP/build
-	rm -rf codec2/build
+	-make distclean -C openssl
+	-make distclean -C opus
+	make distclean -C re
 	rm -rf sndfile/build
+	-make distclean -C spandsp
+	-make distclean -C tiff
+	rm -rf webrtc/obj
+	rm -rf zrtpcpp/build
