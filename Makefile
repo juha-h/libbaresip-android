@@ -158,10 +158,7 @@ g729:
 	cd  bcg729/build && \
 	find . -maxdepth 1 ! -name CMakeLists.txt -type f -delete && \
 	rm -rf build CMakeFiles include src && \
-	cmake .. -DANDROID_ABI=${ANDROID_TARGET_ARCH} -DANDROID_PLATFORM=${API_LEVEL} \
-		-DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=$(API_LEVEL) \
-		-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} \
-		-DCMAKE_C_COMPILER=$(CC) -DCMAKE_SKIP_INSTALL_RPATH=ON && \
+	cmake ..  $(CMAKE_ANDROID_FLAGS) && \
 	cmake --build . --target bcg729-static -j$(CPU_COUNT)
 	rm -rf $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
@@ -283,8 +280,8 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
-		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
+		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
@@ -301,7 +298,8 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 		-DSNDFILE_LIBRARIES="$(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)/libsndfile.a" \
 		-DCMAKE_C_COMPILER="clang" \
 		-DCMAKE_CXX_COMPILER="clang++" \
-		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules -DAPP_MODULES=$(APP_MODULES) \
+		-DAPP_MODULES_DIR=$(PWD)/baresip-app-modules \
+		-DAPP_MODULES=$(APP_MODULES) \
 		-DMODULES=$(MODULES) && \
 	cmake --build . --target baresip -j$(CPU_COUNT)
 	rm -rf $(OUTPUT_DIR)/re/lib/$(ANDROID_TARGET_ARCH)
@@ -326,7 +324,7 @@ all:
 
 .PHONY: download-sources
 download-sources:
-	rm -fr abseil-cpp amr baresip bcg729 codec2 g7221 openssl opus* \
+	rm -fr abseil-cpp amr baresip bcg729 codec2 g7221 openssl opus \
 		re sndfile spandsp tiff vo-amrwbenc webrtc zrtpcpp
 	git clone https://github.com/abseil/abseil-cpp.git -b lts_2024_01_16 --single-branch
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
@@ -335,10 +333,7 @@ download-sources:
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/openssl/openssl.git -b openssl-3.1.0 --single-branch openssl
-	wget https://ftp.osuosl.org/pub/xiph/releases/opus/opus-1.3.1.tar.gz
-	tar zxf opus-1.3.1.tar.gz
-	rm opus-1.3.1.tar.gz
-	mv opus-1.3.1 opus
+	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
