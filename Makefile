@@ -428,9 +428,10 @@ download-sources:
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
-	patch -d re -p1 < re-patch
-	git clone https://github.com/juha-h/libvpx-build.git -b master --single-branch vpx
-	git clone https://github.com/webmproject/libvpx.git -b v1.14.0 -b v1.13.1 --single-branch vpx/jni/libvpx
+	git clone https://github.com/juha-h/libvpx-build.git -b main --single-branch
+	mv libvpx-build/vpx vpx
+	rm -rf libvpx-build
+	git clone https://github.com/webmproject/libvpx.git -b v1.14.0 --single-branch vpx/jni/libvpx
 	git clone https://aomedia.googlesource.com/aom -b v3.8.1 --single-branch
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
