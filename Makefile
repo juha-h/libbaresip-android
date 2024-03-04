@@ -229,6 +229,7 @@ opus:
 	-make distclean -C opus
 	cd opus && \
 	rm -rf include_opus && \
+	./autogen.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	mkdir -p include_opus/opus && \
@@ -270,7 +271,7 @@ tiff:
 webrtc:
 	cd webrtc && \
 	rm -rf obj && \
-	$(NDK_PATH)/ndk-build APP_PLATFORM=android-$(API_LEVEL)
+	$(NDK_PATH)/ndk-build -j$(CPU_COUNT) APP_PLATFORM=android-$(API_LEVEL)
 	rm -rf $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
@@ -288,7 +289,7 @@ vpx:
 	--disable-examples --disable-debug --disable-gprof --disable-gcov \
 	--disable-unit-tests --disable-tools --disable-docs --disable-webm-io \
 	--disable-internal-stats --disable-debug-libs && \
-	$(NDK_PATH)/ndk-build \
+	$(NDK_PATH)/ndk-build -j$(CPU_COUNT) \
 		APP_PLATFORM=$(PLATFORM) APP_ABI=$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
