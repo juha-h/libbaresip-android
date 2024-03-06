@@ -44,19 +44,21 @@ After that you should have in libbaresip-android directory these source director
     amr
     aom
     baresip
+    baresip-app-modules
     bcg729
+    codec2
     ffmpeg-kit
     g7221
-    codec2
     openssl
     opus
     re
+    sndfile
     spandsp
     tiff
     vo-amrwbenc
     vpx
     webrtc
-    ZRTPCPP
+    zrtpcpp
 ```
 
 ## Step 4 - build and install libraries
