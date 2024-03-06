@@ -61,7 +61,7 @@ SYSROOT		:= $(TOOLCHAIN)/sysroot
 PKG_CONFIG_LIBDIR	:= $(NDK_PATH)/prebuilt/$(HOST_OS)/lib/pkgconfig
 
 # Toolchain tools
-PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin
+PATH	:= $(TOOLCHAIN)/bin:/usr/bin:/bin
 AR	:= llvm-ar
 AS	:= $(CLANG_TARGET)$(API_LEVEL)-clang
 CC	:= $(CLANG_TARGET)$(API_LEVEL)-clang
@@ -214,6 +214,7 @@ opus:
 	-make distclean -C opus
 	cd opus && \
 	rm -rf include_opus && \
+	./autogen.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	mkdir -p include_opus/opus && \
@@ -255,7 +256,7 @@ tiff:
 webrtc:
 	cd webrtc && \
 	rm -rf obj && \
-	$(NDK_PATH)/ndk-build APP_PLATFORM=android-$(API_LEVEL)
+	$(NDK_PATH)/ndk-build -j$(CPU_COUNT) APP_PLATFORM=android-$(API_LEVEL)
 	rm -rf $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)

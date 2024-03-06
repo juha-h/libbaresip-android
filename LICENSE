@@ -30,10 +30,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Following of the libraries have their own licenses:
 
-* Apache 2.0: amr
+* Apache 2.0: amr, openssl
 
 * LGPL 2.1: spandsp
 
 * AGPLv4: zrtp
+
+* GNU GPLv2: sndfile
 
 * GNU GPLv3: bcg729
