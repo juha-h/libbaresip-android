@@ -1,7 +1,7 @@
 libbaresip-android
 ==================
 
-This project shows how to build libbaresip for Android on Debian 11 using Android NDK. Resulting libbaresip can be used in Baresip based Android (Studio) applications.
+This project shows how to build libbaresip for Android on Debian 12 using Android NDK. Resulting libbaresip can be used in Baresip based Android (Studio) applications.
 
 ## Step 0 - prerequisites
 
@@ -13,8 +13,7 @@ or use NDK (r26c or newer) that comes with Android Studio.
 
 Install the following Debian packages:
 
-apt install wget make libtool m4 automake pkg-config
-apt install -t bullseye-backports cmake
+apt install wget make libtool m4 automake pkg-config cmake
 
 ## Step 1 - clone libbaresip-android
 
