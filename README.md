@@ -64,11 +64,11 @@ After that you should have in libbaresip-android directory these source director
 
 Build and install the libraries only for a selected architecture with command:
 ```
-$ make install ANDROID_TARGET_ARCH=$ARCH
+$ make libbaresip ANDROID_TARGET_ARCH=$ARCH
 ```
 by replacing $ARCH with armeabi-v7a or arm64-v8a.
 
 Or you can build and install the libraries for all architectures with command:
 ```
-$ make install-all
+$ make all
 ```
