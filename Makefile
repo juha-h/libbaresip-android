@@ -285,7 +285,7 @@ vpx:
 	--enable-external-build --enable-static --enable-realtime-only \
 	--enable-vp8 --enable-vp9 --enable-vp9-highbitdepth \
 	--enable-runtime-cpu-detect --enable-better-hw-compatibility \
-	--enable-small --disable-neon-dotprod \
+	--enable-small --disable-neon-dotprod --disable-avx \
 	--disable-examples --disable-debug --disable-gprof --disable-gcov \
 	--disable-unit-tests --disable-tools --disable-docs --disable-webm-io \
 	--disable-internal-stats --disable-debug-libs && \
