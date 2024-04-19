@@ -279,7 +279,7 @@ ffmpeg:
 	./android.sh --enable-gpl --no-archive \
 		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
 		--enable-android-media-codec \
-		--enable-x264 --enable-x265 ---enable-libaom --enable-libvpx \
+		--enable-x264 --enable-x265 --enable-libaom --enable-libvpx \
 		--enable-libpng --skip-ffmpeg-kit
 	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
