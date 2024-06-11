@@ -1,8 +1,8 @@
 diff --git a/src/sip/auth.c b/src/sip/auth.c
-index 70681e4..f341312 100644
+index f13e82c..929c634 100644
 --- a/src/sip/auth.c
 +++ b/src/sip/auth.c
-@@ -166,7 +166,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
+@@ -214,7 +214,9 @@ static bool auth_handler(const struct sip_hdr *hdr, const struct sip_msg *msg,
  			goto out;
  	}
  	else {
@@ -13,3 +13,18 @@ index 70681e4..f341312 100644
  			err = EAUTH;
  			goto out;
  		}
+diff --git a/src/sip/request.c b/src/sip/request.c
+index 02b45d7..819bbd8 100644
+--- a/src/sip/request.c
++++ b/src/sip/request.c
+@@ -233,8 +233,8 @@ static int request(struct sip_request *req, enum sip_transp tp,
+ 	}
+ 
+ 	if (!req->stateful) {
+-		err = sip_send_conn(req->sip, NULL, tp, dst, mb,
+-				    connect_handler, req);
++		err = sip_transp_send(NULL, req->sip, NULL, tp, dst, req->host,
++				      mb, connect_handler, NULL, req);
+ 	}
+ 	else {
+ 		err = sip_ctrans_request(&req->ct, req->sip, tp, dst, req->met,
