@@ -338,7 +338,7 @@ download-sources:
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.5.0 --single-branch tiff
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.7.0 --single-branch tiff
 	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
