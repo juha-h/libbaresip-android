@@ -210,7 +210,9 @@ openssl:
 	-make distclean -C openssl
 	cd openssl && \
 	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared no-tests -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
-	make build_libs
+	sed -e '/[.]hidden.*OPENSSL_armcap_P/d; /[.]extern.*OPENSSL_armcap_P/ {p; s/extern/hidden/ }' -i -- crypto/*arm*pl crypto/*/asm/*arm*pl && \
+	make build_libs && \
+	git stash
 	rm -rf $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
 	cp openssl/libcrypto.a \
@@ -382,7 +384,7 @@ download-sources:
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
-	git clone https://github.com/openssl/openssl.git -b openssl-3.1.0 --single-branch openssl
+	git clone https://github.com/openssl/openssl.git -b openssl-3.4 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
