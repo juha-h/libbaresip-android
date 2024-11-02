@@ -9,12 +9,11 @@ Download and unzip Android NDK for Linux from:
 ```
 https://developer.android.com/ndk/downloads
 ```
-or use NDK (r26c or newer) that comes with Android Studio.
+or use NDK that comes with Android Studio.  NDK version must match ndkVersion in baresip-studio/app/build.gradle.
 
 Install the following Debian packages:
 ```
-apt install wget make libtool m4 automake pkg-config
-apt install -t bullseye-backports cmake
+apt install wget cmake make libtool m4 automake pkg-config
 ```
 ## Step 1 - clone libbaresip-android
 
