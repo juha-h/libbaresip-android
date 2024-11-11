@@ -5,7 +5,7 @@
 NDK_PATH  := /opt/Android/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-studio/app/build.gradle | sed 's/[^0-9.]*//g')
 
 # Android API level
-API_LEVEL := 23
+API_LEVEL := 26
 
 # Set default from following values: [armeabi-v7a, arm64-v8a, x86_64]
 ANDROID_TARGET_ARCH := arm64-v8a
@@ -113,7 +113,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "webrtc_aecm;augain;oboe;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+MODULES := "webrtc_aecm;augain;aaudio;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
 
 APP_MODULES := "g729"
 
@@ -196,13 +196,6 @@ gzrtp:
 	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtpcpp/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: oboe
-oboe:
-	cd oboe && \
-	rm -rf build && rm -rf .cache && mkdir build && cd build && \
-	cmake .. $(CMAKE_ANDROID_FLAGS) -DBUILD_SHARED_LIBS=false && \
-	cmake --build . -j$(CPU_COUNT)
-
 .PHONY: openssl
 openssl:
 	-make distclean -C openssl
@@ -280,18 +273,18 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g7221 gzrtp oboe openssl opus sndfile spandsp webrtc libre.a
+libbaresip: Makefile
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
 		-DSTATIC=ON \
+		-DAAUDIO_INCLUDE_DIR=${TOOLCHAIN}/sysroot/usr/include \
+		-DAAUDIO_LIBRARY=${TOOLCHAIN}/sysroot/usr/lib/$(TARGET)/$(API_LEVEL)/libaaudio.so \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
-		-DOBOE_INCLUDE_DIR=$(PWD)/oboe/include \
-		-DOBOE_LIBRARY=$(PWD)/oboe/build \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
@@ -344,7 +337,6 @@ download-sources:
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
-	git clone https://github.com/google/oboe -b 1.6-stable --single-branch
 	git clone https://github.com/openssl/openssl.git -b openssl-3.4 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
