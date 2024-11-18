@@ -273,7 +273,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile
+libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp webrtc libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -326,6 +326,7 @@ libbaresip: Makefile
 all:
 	make libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
 	make libbaresip ANDROID_TARGET_ARCH=arm64-v8a
+#	make libbaresip ANDROID_TARGET_ARCH=x86_64
 
 .PHONY: download-sources
 download-sources:
