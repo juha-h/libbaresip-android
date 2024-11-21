@@ -5,7 +5,7 @@
 NDK_PATH  := /opt/Android/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-studio/app/build.gradle | sed 's/[^0-9.]*//g')
 
 # Android API level
-API_LEVEL := 23
+API_LEVEL := 28
 
 # Set default from following values: [armeabi-v7a, arm64-v8a, x86_64]
 ANDROID_TARGET_ARCH := arm64-v8a
@@ -113,7 +113,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "webrtc_aecm;augain;opensles;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+MODULES := "webrtc_aecm;augain;aaudio;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
 
 APP_MODULES := "g729"
 
@@ -280,6 +280,8 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 		$(CMAKE_ANDROID_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
 		-DSTATIC=ON \
+		-DAAUDIO_INCLUDE_DIR=${TOOLCHAIN}/sysroot/usr/include \
+		-DAAUDIO_LIBRARY=${TOOLCHAIN}/sysroot/usr/lib/$(TARGET)/$(API_LEVEL)/libaaudio.so \
 		-Dre_DIR=$(PWD)/re/cmake \
 		-DRE_LIBRARY=$(PWD)/re/build/libre.a \
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
@@ -324,6 +326,7 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 all:
 	make libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
 	make libbaresip ANDROID_TARGET_ARCH=arm64-v8a
+#	make libbaresip ANDROID_TARGET_ARCH=x86_64
 
 .PHONY: download-sources
 download-sources:
