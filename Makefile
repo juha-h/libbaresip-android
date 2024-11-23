@@ -25,7 +25,7 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	OPENSSL_ARCH := android-arm
 	MARCH        := armv7-a
 	DISABLE_NEON := --disable-neon
-	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm
+	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm-24
 	FFMPEG_DIS   := --disable-arm64-v8a --disable-x86-64 
 else
 ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
@@ -35,7 +35,7 @@ ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
 	OPENSSL_ARCH := android-arm64
 	MARCH        := armv8-a
 	DISABLE_NEON :=
-	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm64
+	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm64-24
 	FFMPEG_DIS   := --disable-arm-v7a --disable-x86-64
 else
 ifeq ($(ANDROID_TARGET_ARCH), x86_64)
@@ -45,7 +45,7 @@ ifeq ($(ANDROID_TARGET_ARCH), x86_64)
 	OPENSSL_ARCH := android-x86_64
 	MARCH        := x86-64
 	DISABLE_NEON :=
-	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-x86_64
+	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-x86_64-24
 	FFMPEG_DIS   := --disable-arm-v7a --disable-arm64-v8a
 else
 	exit 1
