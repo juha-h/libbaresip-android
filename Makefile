@@ -279,7 +279,7 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
 		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
-		-DSTATIC=ON \
+		-DSTATIC=ON -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
 		-DAAUDIO_INCLUDE_DIR=${TOOLCHAIN}/sysroot/usr/include \
 		-DAAUDIO_LIBRARY=${TOOLCHAIN}/sysroot/usr/lib/$(TARGET)/$(API_LEVEL)/libaaudio.so \
 		-Dre_DIR=$(PWD)/re/cmake \
