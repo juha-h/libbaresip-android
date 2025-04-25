@@ -1,9 +1,13 @@
 diff --git a/autogen.sh b/autogen.sh
-index 2e6c6bd0..35aaee55 100755
+index 2e6c6bd0..0d34a5dc 100755
 --- a/autogen.sh
 +++ b/autogen.sh
-@@ -24,7 +24,7 @@ do
-     wget -q --timeout=5 -O config/$file.tmp \
+@@ -21,10 +21,10 @@ autoconf || retval=$?
+ for file in config.guess config.sub
+ do
+     echo "$0: getting $file..."
+-    wget -q --timeout=5 -O config/$file.tmp \
++    wget -q --timeout=15 -O config/$file.tmp \
        "https://git.savannah.gnu.org/cgit/config.git/plain/${file}" \
        && mv -f config/$file.tmp config/$file \
 -      && chmod a+x config/$file || retval=$?
