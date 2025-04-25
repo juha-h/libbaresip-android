@@ -398,6 +398,7 @@ download-sources:
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
 	patch -d re -p1 < re-patch
+	patch -d tiff -p1 < tiff-patch
 	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
 
 clean:
