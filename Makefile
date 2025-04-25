@@ -349,6 +349,7 @@ download-sources:
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	patch -d re -p1 < re-patch
+	patch -d tiff -p1 < tiff-patch
 
 clean:
 	-make distclean -C amr
