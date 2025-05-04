@@ -1,0 +1,38 @@
+diff --git a/ffmpeg-android-maker.sh b/ffmpeg-android-maker.sh
+index 8f83171..e6f4127 100755
+--- a/ffmpeg-android-maker.sh
++++ b/ffmpeg-android-maker.sh
+@@ -97,2 +97,2 @@ do
+   cd ${BASE_DIR}
+ done
+
++sed -i -e 's|av_log(context, AV_LOG_INFO, "Android camera capture session was closed.|//|' sources/ffmpeg/ffmpeg-*/libavdevice/android_camera.c
++
+ # Main build loop
+ for ABI in ${FFMPEG_ABIS_TO_BUILD[@]}
+ do
+diff --git a/scripts/libvpx/build.sh b/scripts/libvpx/build.sh
+index 4a39815..66d7f81 100755
+--- a/scripts/libvpx/build.sh
++++ b/scripts/libvpx/build.sh
+@@ -38,8 +38,10 @@ NM=${FAM_NM} \
+     --enable-libyuv \
+     --enable-small \
+     --enable-better-hw-compatibility \
++    --enable-runtime-cpu-detect \
+     --enable-vp8 \
+     --enable-vp9 \
++    --enable-vp9-highbitdepth \
+     --enable-static \
+     --disable-shared \
+     --disable-ccache \
+@@ -55,5 +57,4 @@ NM=${FAM_NM} \
+     --disable-docs \
+     --disable-unit-tests \
+     --disable-decode-perf-tests \
+-    --disable-encode-perf-tests \
+-    --disable-runtime-cpu-detect  || exit 1
++    --disable-encode-perf-tests || exit 1
+
+ ${MAKE_EXECUTABLE} clean
+ ${MAKE_EXECUTABLE} -j${HOST_NPROC}

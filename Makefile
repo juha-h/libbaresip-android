@@ -1,7 +1,10 @@
 # -------------------- VALUES TO CONFIGURE --------------------
 
+# Path to Android SDK
+SDK_PATH := /opt/Android
+
 # Path to Android NDK
-# NDK version must match ndkVersion in app/build.gradle
+# NDK version must match ndkVersion in app/build.gradle.kts
 NDK_PATH  := /opt/Android/ndk/$(shell sed -n '/ndkVersion/p' /usr/src/baresip-studio/app/build.gradle.kts | sed 's/[^0-9.]*//g')
 
 # Android API level
@@ -24,9 +27,6 @@ ifeq ($(ANDROID_TARGET_ARCH), armeabi-v7a)
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm
 	MARCH        := armv7-a
-	DISABLE_NEON := --disable-neon
-	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm-$(API_LEVEL)
-	FFMPEG_DIS   := --disable-arm64-v8a --disable-x86-64 
 else
 ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
 	TARGET       := aarch64-linux-android
@@ -34,9 +34,6 @@ ifeq ($(ANDROID_TARGET_ARCH), arm64-v8a)
 	ARCH         := arm
 	OPENSSL_ARCH := android-arm64
 	MARCH        := armv8-a
-	DISABLE_NEON :=
-	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-arm64-$(API_LEVEL)
-	FFMPEG_DIS   := --disable-arm-v7a --disable-x86-64
 else
 ifeq ($(ANDROID_TARGET_ARCH), x86_64)
 	TARGET       := x86_64-linux-android
@@ -44,9 +41,6 @@ ifeq ($(ANDROID_TARGET_ARCH), x86_64)
 	ARCH         := x86
 	OPENSSL_ARCH := android-x86_64
 	MARCH        := x86-64
-	DISABLE_NEON :=
-	FFMPEG_LIB   := $(PWD)/ffmpeg-kit/prebuilt/android-x86_64-$(API_LEVEL)
-	FFMPEG_DIS   := --disable-arm-v7a --disable-arm64-v8a
 else
 	exit 1
 endif
@@ -272,44 +266,44 @@ webrtc:
 	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: ffmpeg
-ffmpeg:
-	rm -rf $(FFMPEG_LIB) && \
-	cd ffmpeg-kit && \
-	ANDROID_SDK_ROOT=/foo/bar \
-	ANDROID_NDK_ROOT=$(NDK_PATH) \
-	./android.sh --api-level=$(API_LEVEL) --enable-gpl --no-archive \
-		$(FFMPEG_DIS) --disable-arm-v7a-neon --disable-x86 \
-		--enable-android-media-codec \
-		--enable-x264 --enable-libaom --enable-libvpx \
-		--enable-libpng --skip-ffmpeg-kit
-	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/x264/lib/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/libaom/lib/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/libvpx/lib/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+.PHONY: png
+png:
+	echo "CC = $(CC)"
+	- make distclean -C png
+	cd png && \
+	NDK=$(NDK_PATH) \
+	API=$(API_LEVEL) \
+	CC=$(TOOLCHAIN)/bin/$(CLANG_TARGET)$(API_LEVEL)-clang \
+	./configure --host $(TARGET) --prefix=$(PWD)/png/output/$(ANDROID_TARGET_ARCH) --enable-pic --enable-shared=no && \
+	make -j$(CPU_COUNT)
+	mv png/.libs/libpng16.a png/.libs/libpng.a
 	rm -rf $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/libpng/lib/libpng.a $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
-	rm -rf $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/cpu-features/lib/libcpu_features.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/cpu-features/lib/libndk_compat.a $(OUTPUT_DIR)/cpu_features/lib/$(ANDROID_TARGET_ARCH)
+	cp png/.libs/libpng.a $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)/libpng.a
+
+.PHONY: ffmpeg
+ffmpeg:
+	cd ffmpeg-android-maker && \
+	ANDROID_SDK_HOME=$(SDK_PATH) \
+	ANDROID_NDK_HOME=$(NDK_PATH) \
+	./ffmpeg-android-maker.sh --target-abis=$(ANDROID_TARGET_ARCH) --android-api-level=$(API_LEVEL) --enable-libvpx --enable-libaom --enable-libx264 --enable-libx265
+	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libx265.a $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/include/libavcodec
-	cp $(PWD)/ffmpeg-kit/src/ffmpeg/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libavcodec.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libavutil.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libswresample.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libavformat.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libavdevice.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libavfilter.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	cp $(FFMPEG_LIB)/ffmpeg/lib/libswscale.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
+	cp ffmpeg-android-maker/build/ffmpeg/$(ANDROID_TARGET_ARCH)/include/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
+	cp ffmpeg-android-maker/output/lib/$(ANDROID_TARGET_ARCH)/*.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
 	cd re && \
@@ -321,13 +315,19 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp webrtc ffmpeg libre.a
+libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp webrtc png ffmpeg libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(FFMPEG_LIB)/ffmpeg;$(FFMPEG_LIB)/libaom;$(FFMPEG_LIB)/libvpx;$(FFMPEG_LIB)/libpng" \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(PWD)/ffmpeg-android-maker/build/ffmpeg/$(ANDROID_TARGET_ARCH);$(OUTPUT_DIR)/libpng" \
 		-DSTATIC=ON \
+		-DVPX_INCLUDE_DIR=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include \
+		-DVPX_LIBRARY=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libvpx.a \
+		-DAOM_INCLUDE_DIR=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include \
+		-DAOM_LIBRARY=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libaom.a \
+		-DPNG_INCLUDE_DIR=$(PWD)/png \
+		-DPNG_LIBRARY=$(OUPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)/libpng.a \
 		-DAAUDIO_INCLUDE_DIR=${TOOLCHAIN}/sysroot/usr/include \
 		-DAAUDIO_LIBRARY=${TOOLCHAIN}/sysroot/usr/lib/$(TARGET)/$(API_LEVEL)/libaaudio.so \
 		-Dre_DIR=$(PWD)/re/cmake \
@@ -379,7 +379,8 @@ all:
 .PHONY: download-sources
 download-sources:
 	rm -fr abseil-cpp amr baresip bcg729 codec2 g7221 openssl opus* \
-		re sndfile spandsp tiff vo-amrwbenc webrtc zrtpcpp ffmpeg-kit
+		re sndfile spandsp tiff vo-amrwbenc webrtc zrtpcpp \
+		png ffmpeg-android-maker
 	git clone https://github.com/abseil/abseil-cpp.git -b lts_2024_01_16 --single-branch
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
@@ -396,10 +397,11 @@ download-sources:
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
-	git clone https://github.com/arthenica/ffmpeg-kit.git -b development --single-branch
+	git clone https://github.com/pnggroup/libpng.git -b v1.6.48 --single-branch png
+	git clone https://github.com/Javernaut/ffmpeg-android-maker.git -b master --single-branch
 	patch -d re -p1 < re-patch
 	patch -d tiff -p1 < tiff-patch
-	patch -d ffmpeg-kit -p1 < ffmpeg.sh-patch
+	patch -d ffmpeg-android-maker -p1 < ffmpeg-android-maker.patch
 
 clean:
 	-make distclean -C amr
