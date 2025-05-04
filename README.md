@@ -62,9 +62,9 @@ Build and install the libraries only for a selected architecture with command:
 ```
 $ make libbaresip ANDROID_TARGET_ARCH=$ARCH
 ```
-by replacing $ARCH with armeabi-v7a or arm64-v8a.
+by replacing $ARCH with armeabi-v7a, arm64-v8a, or x86_64.
 
-Or you can build and install the libraries for all architectures with command:
+Or you can build and install the libraries for armeabi-v7a and arm64-v8a architectures with command:
 ```
 $ make all
 ```
