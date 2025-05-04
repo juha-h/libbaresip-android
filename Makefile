@@ -13,7 +13,7 @@ API_LEVEL := 28
 # Set default from following values: [armeabi-v7a, arm64-v8a, x86_64]
 ANDROID_TARGET_ARCH := arm64-v8a
 
-# Directory where libraries and include files are instelled
+# Directory where libraries and include files are installed
 OUTPUT_DIR := /usr/src/baresip-studio/distribution.video
 
 # -------------------- GENERATED VALUES --------------------
