@@ -200,7 +200,7 @@ gzrtp:
 openssl:
 	-make distclean -C openssl
 	cd openssl && \
-	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared no-tests -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
+	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared no-tests no-apps no-docs -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
 	sed -e '/[.]hidden.*OPENSSL_armcap_P/d; /[.]extern.*OPENSSL_armcap_P/ {p; s/extern/hidden/ }' -i -- crypto/*arm*pl crypto/*/asm/*arm*pl && \
 	make build_libs && \
 	git stash
