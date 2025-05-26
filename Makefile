@@ -203,7 +203,7 @@ gzrtp:
 openssl:
 	-make distclean -C openssl
 	cd openssl && \
-	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared no-tests -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
+	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) no-shared no-tests no-apps no-docs -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) && \
 	sed -e '/[.]hidden.*OPENSSL_armcap_P/d; /[.]extern.*OPENSSL_armcap_P/ {p; s/extern/hidden/ }' -i -- crypto/*arm*pl crypto/*/asm/*arm*pl && \
 	make build_libs && \
 	git stash
@@ -374,7 +374,9 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 all:
 	make libbaresip ANDROID_TARGET_ARCH=arm64-v8a
 	make libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
-#	make libbaresip ANDROID_TARGET_ARCH=x86_64
+
+debug:	all
+	make libbaresip ANDROID_TARGET_ARCH=x86_64
 
 .PHONY: download-sources
 download-sources:
