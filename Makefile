@@ -326,7 +326,9 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 all:
 	make libbaresip ANDROID_TARGET_ARCH=arm64-v8a
 	make libbaresip ANDROID_TARGET_ARCH=armeabi-v7a
-#	make libbaresip ANDROID_TARGET_ARCH=x86_64
+
+debug:  all
+	make libbaresip ANDROID_TARGET_ARCH=x86_64
 
 .PHONY: download-sources
 download-sources:
