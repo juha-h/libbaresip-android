@@ -203,7 +203,7 @@ gzrtp:
 openssl:
 	-make distclean -C openssl
 	cd openssl && \
-	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) -static no-apps no-asm no-docs no-engine no-gost no-legacy no-shared no-ssl no-tests no-zlib && \
+	ANDROID_NDK_ROOT=$(NDK_PATH) PATH=$(PATH) ./Configure $(OPENSSL_ARCH) -U__ANDROID_API__ -D__ANDROID_API__=$(API_LEVEL) no-apps no-asm no-docs no-engine no-gost no-legacy no-shared no-ssl no-tests no-zlib && \
 	make -j$(CPU_COUNT) && \
 	rm -rf $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/openssl/lib/$(ANDROID_TARGET_ARCH)
