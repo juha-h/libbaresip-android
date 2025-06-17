@@ -294,13 +294,20 @@ ffmpeg:
 	rm -rf $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libaom.a $(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/aom/include
+	mkdir -p $(OUTPUT_DIR)/aom/include
+	cp -r ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include/aom $(OUTPUT_DIR)/aom/include
 	rm -rf $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libvpx.a $(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/vpx/include/
+	mkdir -p $(OUTPUT_DIR)/vpx/include
+	cp -r ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include/vpx $(OUTPUT_DIR)/vpx/include
+	rm -rf $(OUTPUT_DIR)/ffmpeg/include
+	mkdir -p $(OUTPUT_DIR)/ffmpeg/include
+	cp -r ffmpeg-android-maker/build/ffmpeg/$(ANDROID_TARGET_ARCH)/include/* $(OUTPUT_DIR)/ffmpeg/include
 	rm -rf $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/ffmpeg/include/libavcodec
-	cp ffmpeg-android-maker/build/ffmpeg/$(ANDROID_TARGET_ARCH)/include/libavcodec/jni.h $(OUTPUT_DIR)/ffmpeg/include/libavcodec
 	cp ffmpeg-android-maker/output/lib/$(ANDROID_TARGET_ARCH)/*.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
 libre.a: Makefile
@@ -318,12 +325,26 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
 		$(CMAKE_ANDROID_FLAGS) \
-		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl;$(PWD)/ffmpeg-android-maker/build/ffmpeg/$(ANDROID_TARGET_ARCH);$(OUTPUT_DIR)/libpng" \
+		-DCMAKE_FIND_ROOT_PATH="$(PWD)/amr;$(PWD)/vo-amrwbenc;$(PWD)/openssl" \
 		-DSTATIC=ON \
-		-DVPX_INCLUDE_DIR=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include \
-		-DVPX_LIBRARY=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libvpx.a \
-		-DAOM_INCLUDE_DIR=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include \
-		-DAOM_LIBRARY=$(PWD)/ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libaom.a \
+		-DFFMPEG_avcodec_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libavcodec.so \
+		-DFFMPEG_avcodec_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DFFMPEG_avfilter_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libavfilter.so \
+		-DFFMPEG_avfilter_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DFFMPEG_avformat_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libavformat.so \
+		-DFFMPEG_avformat_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DFFMPEG_swscale_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libswscale.so \
+		-DFFMPEG_swscale_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DFFMPEG_swresample_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libswresample.so \
+		-DFFMPEG_swresample_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DFFMPEG_avdevice_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libavdevice.so \
+		-DFFMPEG_avdevice_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DFFMPEG_avutil_LIBRARY=$(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)/libavutil.so \
+		-DFFMPEG_avutil_INCLUDE_DIR=$(OUTPUT_DIR)/ffmpeg/include \
+		-DVPX_INCLUDE_DIR=$(OUTPUT_DIR)/vpx/include \
+		-DVPX_LIBRARY=$(OUTPUT_DIR)/vpx/lib/$(ANDROID_TARGET_ARCH)/libvpx.a \
+		-DAOM_INCLUDE_DIR=$(OUTPUT_DIR)/aom/include \
+		-DAOM_LIBRARY=$(OUTPUT_DIR)/aom/lib/$(ANDROID_TARGET_ARCH)/libaom.a \
 		-DPNG_INCLUDE_DIR=$(PWD)/png \
 		-DPNG_LIBRARY=$(OUPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)/libpng.a \
 		-DAAUDIO_INCLUDE_DIR=${TOOLCHAIN}/sysroot/usr/include \
