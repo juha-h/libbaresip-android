@@ -113,7 +113,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "webrtc_aecm;augain;aaudio;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+MODULES := "augain;aaudio;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
 
 APP_MODULES := "g729"
 
@@ -252,15 +252,6 @@ tiff:
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
 
-.PHONY: webrtc
-webrtc:
-	cd webrtc && \
-	rm -rf obj && \
-	$(NDK_PATH)/ndk-build -j$(CPU_COUNT) APP_PLATFORM=android-$(API_LEVEL)
-	rm -rf $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
-	cp webrtc/obj/local/$(ANDROID_TARGET_ARCH)/libwebrtc.a $(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)
-
 libre.a: Makefile
 	cd re && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
@@ -271,7 +262,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp webrtc libre.a
+libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -291,8 +282,6 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp we
 		-DCODEC2_LIBRARY=$(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)/libcodec2.a \
 		-DSPANDSP_INCLUDE_DIR="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
 		-DSPANDSP_LIBRARY=$(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)/libspandsp.a \
-		-DWEBRTC_AECM_INCLUDE_DIR=$(PWD)/webrtc/include \
-		-DWEBRTC_AECM_LIBRARY=$(OUTPUT_DIR)/webrtc/lib/$(ANDROID_TARGET_ARCH)/libwebrtc.a \
 		-DG7221_INCLUDE_DIR=$(PWD)/g7221/src \
 		-DG7221_LIBRARY=$(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)/libg722_1.a \
 		-DGZRTP_INCLUDE_DIR=$(PWD)/zrtpcpp \
@@ -330,9 +319,8 @@ debug:  all
 
 .PHONY: download-sources
 download-sources:
-	rm -fr abseil-cpp amr baresip bcg729 codec2 g7221 openssl opus \
-		re sndfile spandsp tiff vo-amrwbenc webrtc zrtpcpp
-	git clone https://github.com/abseil/abseil-cpp.git -b lts_2024_01_16 --single-branch
+	rm -fr amr baresip bcg729 codec2 g7221 openssl opus \
+		re sndfile spandsp tiff vo-amrwbenc zrtpcpp
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
@@ -344,9 +332,7 @@ download-sources:
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
 	git clone https://gitlab.com/libtiff/libtiff.git -b v4.7.0 --single-branch tiff
-	git clone https://github.com/juha-h/libwebrtc.git -b mobile --single-branch webrtc
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
-	cp -r abseil-cpp/absl webrtc/jni/src/webrtc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	patch -d re -p1 < re-patch
 	patch -d tiff -p1 < tiff-patch
@@ -363,5 +349,4 @@ clean:
 	rm -rf sndfile/build
 	-make distclean -C spandsp
 	-make distclean -C tiff
-	rm -rf webrtc/obj
 	rm -rf zrtpcpp/build
