@@ -1,7 +1,7 @@
 libbaresip-android
 ==================
 
-This project shows how to build libbaresip for Android on Debian 12 using Android NDK. Resulting libbaresip can be used in Baresip based Android (Studio) applications.
+This project shows how to build libbaresip for Android on Debian 13 using Android NDK. Resulting libbaresip can be used in Baresip based Android (Studio) applications.
 
 ## Step 0 - prerequisites
 
@@ -39,7 +39,6 @@ This will also patch re and baresip as needed by baresip-studio project.
 
 After that you should have in libbaresip-android directory these source directories:
 ```
-    abseil-cpp
     amr
     baresip
     bcg729
@@ -52,7 +51,6 @@ After that you should have in libbaresip-android directory these source director
     spandsp
     tiff
     vo-amrwbenc
-    webrtc
     zrtpcpp
 ```
 
@@ -67,4 +65,8 @@ by replacing $ARCH with armeabi-v7a, arm64-v8a, or x86_64.
 Or you can build and install the libraries for armeabi-v7a and arm64-v8a architectures with command:
 ```
 $ make all
+```
+and also for x86_64 architecture with command:
+```
+make debug
 ```
