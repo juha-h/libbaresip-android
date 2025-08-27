@@ -68,5 +68,5 @@ $ make all
 ```
 and also for x86_64 architecture with command:
 ```
-make debug
+$ make debug
 ```
