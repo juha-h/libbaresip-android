@@ -168,13 +168,11 @@ g729:
 g7221:
 	-make distclean -C g7221
 	cd g7221 && \
-	libtoolize --force && \
-	autoreconf --install && \
-	autoconf && \
+	./autogen.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
+	./configure --build=x86_64 --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
@@ -325,7 +323,7 @@ download-sources:
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
-	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
+	git clone https://github.com/freeswitch/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/openssl/openssl.git -b openssl-3.5 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
