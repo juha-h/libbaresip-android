@@ -171,13 +171,11 @@ g729:
 g7221:
 	-make distclean -C g7221
 	cd g7221 && \
-	libtoolize --force && \
-	autoreconf --install && \
-	autoconf && \
+	./autogen.sh && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
+	./configure --build=x86_64 --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
@@ -351,7 +349,7 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp pn
 		-DCODEC2_LIBRARY=$(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)/libcodec2.a \
 		-DSPANDSP_INCLUDE_DIR="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
 		-DSPANDSP_LIBRARY=$(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)/libspandsp.a \
-		-DG7221_INCLUDE_DIR=$(PWD)/g7221/src \
+		-DG7221_INCLUDE_DIR=$(PWD)/g7221/src/g722_1 \
 		-DG7221_LIBRARY=$(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)/libg722_1.a \
 		-DGZRTP_INCLUDE_DIR=$(PWD)/zrtpcpp \
 		-DGZRTP_LIBRARY="$(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)/libzrtpcppcore.a" \
@@ -395,7 +393,7 @@ download-sources:
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
-	git clone https://github.com/juha-h/libg7221.git -b master --single-branch g7221
+	git clone https://github.com/freeswitch/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/openssl/openssl.git -b openssl-3.5 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
