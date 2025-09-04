@@ -172,7 +172,7 @@ g7221:
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --build=x86_64 --host=$(TARGET) --disable-shared --enable-fixed-point=no CFLAGS="-fPIC" && \
+	./configure --build=x86_64 --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
@@ -332,6 +332,7 @@ download-sources:
 	git clone https://gitlab.com/libtiff/libtiff.git -b v4.7.0 --single-branch tiff
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
+	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
 	patch -d tiff -p1 < tiff-patch
 
