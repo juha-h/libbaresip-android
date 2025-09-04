@@ -172,7 +172,7 @@ g7221:
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --build=x86_64 --host=$(TARGET) --disable-shared --disable-fixed-point CFLAGS="-fPIC" && \
+	./configure --build=x86_64 --host=$(TARGET) --disable-shared --enable-fixed-point=no CFLAGS="-fPIC" && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
