@@ -404,6 +404,7 @@ download-sources:
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	git clone https://github.com/pnggroup/libpng.git -b v1.6.48 --single-branch png
 	git clone https://github.com/Javernaut/ffmpeg-android-maker.git -b master --single-branch
+	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
 	patch -d tiff -p1 < tiff-patch
 	patch -d ffmpeg-android-maker -p1 < ffmpeg-android-maker.patch
