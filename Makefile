@@ -299,6 +299,19 @@ ffmpeg:
 	mkdir -p $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg-android-maker/output/lib/$(ANDROID_TARGET_ARCH)/*.so $(OUTPUT_DIR)/ffmpeg/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: libyuv
+libyuv:
+	cd libyuv && \
+	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	make -j$(CPU_COUNT)
+	rm -rf $(OUTPUT_DIR)/libyuv/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/libyuv/lib/$(ANDROID_TARGET_ARCH)
+	cp libyuv/build/libyuv.a $(OUTPUT_DIR)/libyuv/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/libyuv/include
+	mkdir -p $(OUTPUT_DIR)/libyuv/include
+	cp -r libyuv/include/* $(OUTPUT_DIR)/libyuv/include
+
 libre.a: Makefile
 	cd re && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
@@ -309,7 +322,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp png ffmpeg libre.a
+libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp png ffmpeg libyuv libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -388,7 +401,7 @@ debug:	all
 download-sources:
 	rm -fr amr baresip bcg729 codec2 g7221 openssl opus* \
 		re sndfile spandsp tiff vo-amrwbenc zrtpcpp \
-		png ffmpeg-android-maker
+		png ffmpeg-android-maker libyuv
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
@@ -404,6 +417,7 @@ download-sources:
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	git clone https://github.com/pnggroup/libpng.git -b v1.6.48 --single-branch png
 	git clone https://github.com/Javernaut/ffmpeg-android-maker.git -b master --single-branch
+	git clone https://chromium.googlesource.com/libyuv/libyuv
 	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
 	patch -d tiff -p1 < tiff-patch
