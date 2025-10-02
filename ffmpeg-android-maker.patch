@@ -11,6 +11,19 @@ index 8f83171..e6f4127 100755
  # Main build loop
  for ABI in ${FFMPEG_ABIS_TO_BUILD[@]}
  do
+diff --git a/scripts/ffmpeg/build.sh b/scripts/ffmpeg/build.sh
+index 620d1c9..d913483 100755
+--- a/scripts/ffmpeg/build.sh
++++ b/scripts/ffmpeg/build.sh
+@@ -21,2 +21,2 @@ do
+   ADDITIONAL_COMPONENTS+=" --enable-$LIBARY_NAME"
+ done
+
++ADDITIONAL_COMPONENTS+=" --enable-jni --enable-mediacodec --enable-decoder=h264_mediacodec --enable-decoder=hevc_mediacodec --enable-encoder=h264_mediacodec --enable-encoder=hevc_mediacodec"
++
+ # Referencing dependencies without pkgconfig
+ DEP_CFLAGS="-I${BUILD_DIR_EXTERNAL}/${ANDROID_ABI}/include"
+ DEP_LD_FLAGS="-L${BUILD_DIR_EXTERNAL}/${ANDROID_ABI}/lib $FFMPEG_EXTRA_LD_FLAGS"
 diff --git a/scripts/libaom/build.sh b/scripts/libaom/build.sh
 index 75ff651..56e2ade 100755
 --- a/scripts/libaom/build.sh
