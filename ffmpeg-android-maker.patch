@@ -15,10 +15,10 @@ diff --git a/scripts/ffmpeg/build.sh b/scripts/ffmpeg/build.sh
 index 620d1c9..d913483 100755
 --- a/scripts/ffmpeg/build.sh
 +++ b/scripts/ffmpeg/build.sh
-@@ -21,2 +21,2 @@ do
+@@ -21,6 +21,8 @@ do
    ADDITIONAL_COMPONENTS+=" --enable-$LIBARY_NAME"
  done
-
+ 
 +ADDITIONAL_COMPONENTS+=" --enable-jni --enable-mediacodec --enable-decoder=h264_mediacodec --enable-decoder=hevc_mediacodec --enable-encoder=h264_mediacodec --enable-encoder=hevc_mediacodec"
 +
  # Referencing dependencies without pkgconfig
