@@ -277,6 +277,9 @@ ffmpeg:
 	rm -rf $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libx264.a $(OUTPUT_DIR)/x264/lib/$(ANDROID_TARGET_ARCH)
+	rm -rf $(OUTPUT_DIR)/x264/include
+	mkdir -p $(OUTPUT_DIR)/x264/include
+	cp -r ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/include/x264*.h $(OUTPUT_DIR)/x264/include
 	rm -rf $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
 	cp ffmpeg-android-maker/build/external/$(ANDROID_TARGET_ARCH)/lib/libx265.a $(OUTPUT_DIR)/x265/lib/$(ANDROID_TARGET_ARCH)
