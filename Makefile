@@ -415,7 +415,7 @@ download-sources:
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.7.0 --single-branch tiff
+	git clone https://gitlab.com/libtiff/libtiff.git -b v4.7.1 --single-branch tiff
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	git clone https://github.com/pnggroup/libpng.git -b v1.6.48 --single-branch png
@@ -423,7 +423,6 @@ download-sources:
 	git clone https://chromium.googlesource.com/libyuv/libyuv
 	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
-	patch -d tiff -p1 < tiff-patch
 	patch -d ffmpeg-android-maker -p1 < ffmpeg-android-maker.patch
 
 clean:
