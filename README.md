@@ -43,13 +43,12 @@ After that you should have in libbaresip-android directory these source director
     baresip
     bcg729
     codec2
+    g722
     g7221
     openssl
     opus
     re
     sndfile
-    spandsp
-    tiff
     vo-amrwbenc
     zrtpcpp
 ```
