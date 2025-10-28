@@ -113,7 +113,7 @@ CMAKE_ANDROID_FLAGS := \
 	-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 	-DCMAKE_BUILD_TYPE=Release
 
-MODULES := "augain;aaudio;dtls_srtp;opus;g711;g722;g7221;g726;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
+MODULES := "augain;aaudio;dtls_srtp;opus;g711;libg722;g7221;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;debug_cmd"
 
 APP_MODULES := "g729"
 
@@ -144,7 +144,7 @@ amr:
 .PHONY: codec2
 codec2:
 	cd codec2 && \
-	rm -rf build && rm -rf .cache && mkdir build && cd build && \
+	rm -rf build && mkdir build && cd build && \
 	cmake .. -DBUILD_SHARED_LIBS=OFF $(CMAKE_ANDROID_FLAGS) && \
 	cmake --build . --target codec2 -j$(CPU_COUNT) && \
 	cp ../src/codec2.h codec2
@@ -163,6 +163,16 @@ g729:
 	rm -rf $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
 	cp bcg729/build/src/libbcg729.a $(OUTPUT_DIR)/g729/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: g722
+g722:
+	cd g722 && \
+	rm -rf build && mkdir build && cd build && \
+	cmake .. $(CMAKE_ANDROID_FLAGS) && \
+	cmake --build . -j$(CPU_COUNT) && \
+	rm -rf $(OUTPUT_DIR)/g722/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/g722/lib/$(ANDROID_TARGET_ARCH)
+	cp g722/build/libg722.a $(OUTPUT_DIR)/g722/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: g7221
 g7221:
@@ -231,25 +241,6 @@ sndfile:
 	mkdir -p $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 	cp sndfile/build/libsndfile.a $(OUTPUT_DIR)/sndfile/lib/$(ANDROID_TARGET_ARCH)
 
-.PHONY: spandsp
-spandsp: tiff
-	-make distclean -C spandsp
-	cd spandsp && \
-	touch configure.ac aclocal.m4 configure Makefile.am Makefile.in && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --enable-builtin-tiff --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
-	rm -rf $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
-	mkdir -p $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
-	cp spandsp/src/.libs/libspandsp.a $(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)
-
-.PHONY: tiff
-tiff:
-	-make distclean -C tiff
-	cd tiff && \
-	./autogen.sh && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes ./configure --host=arm-linux --disable-shared CFLAGS="$(COMMON_CFLAGS)" && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make
-
 libre.a: Makefile
 	cd re && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
@@ -260,7 +251,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp libre.a
+libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp openssl opus sndfile libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -278,8 +269,8 @@ libbaresip: Makefile amr g729 codec2 g7221 gzrtp openssl opus sndfile spandsp li
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
 		-DCODEC2_LIBRARY=$(OUTPUT_DIR)/codec2/lib/$(ANDROID_TARGET_ARCH)/libcodec2.a \
-		-DSPANDSP_INCLUDE_DIR="$(PWD)/spandsp/src;$(PWD)/tiff/libtiff" \
-		-DSPANDSP_LIBRARY=$(OUTPUT_DIR)/spandsp/lib/$(ANDROID_TARGET_ARCH)/libspandsp.a \
+		-DLIBG722_INCLUDE_DIR=$(PWD)/g722 \
+		-DLIBG722_LIBRARY=$(OUTPUT_DIR)/g722/lib/$(ANDROID_TARGET_ARCH)/libg722.a \
 		-DG7221_INCLUDE_DIR=$(PWD)/g7221/src/g722_1 \
 		-DG7221_LIBRARY=$(OUTPUT_DIR)/g7221/lib/$(ANDROID_TARGET_ARCH)/libg722_1.a \
 		-DGZRTP_INCLUDE_DIR=$(PWD)/zrtpcpp \
@@ -317,19 +308,18 @@ debug:  all
 
 .PHONY: download-sources
 download-sources:
-	rm -fr amr baresip bcg729 codec2 g7221 openssl opus \
-		re sndfile spandsp tiff vo-amrwbenc zrtpcpp
+	rm -fr amr baresip bcg729 codec2 g722 g7221 openssl opus \
+		re sndfile vo-amrwbenc zrtpcpp
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
 	git clone https://github.com/BelledonneCommunications/bcg729.git -b release/1.1.1 --single-branch
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
+	git clone https://github.com/sippy/libg722.git -b v1.2.2 --single-branch g722
 	git clone https://github.com/freeswitch/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/openssl/openssl.git -b openssl-3.5 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
-	git clone https://github.com/juha-h/spandsp.git -b 1.0 --single-branch spandsp
-	git clone https://gitlab.com/libtiff/libtiff.git -b v4.7.1 --single-branch tiff
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
 	patch -d g7221 -p1 < g7221-patch
@@ -339,12 +329,11 @@ clean:
 	-make distclean -C amr
 	make distclean -C baresip
 	rm -rf codec2/build
+	rm -rf g722/build
 	-make distclean -C g7221
 	-make clean -C bcg729
 	-make distclean -C openssl
 	-make distclean -C opus
 	make distclean -C re
 	rm -rf sndfile/build
-	-make distclean -C spandsp
-	-make distclean -C tiff
 	rm -rf zrtpcpp/build
