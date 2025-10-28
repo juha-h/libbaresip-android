@@ -42,18 +42,17 @@ After that you should have in libbaresip-android directory these source director
     amr
     aom
     baresip
-    baresip-app-modules
     bcg729
     codec2
     ffmpeg-android-maker
+    g722
     g7221
+    libyuv
     openssl
     opus
     png
     re
     sndfile
-    spandsp
-    tiff
     vo-amrwbenc
     zrtpcpp
 ```
