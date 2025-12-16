@@ -73,7 +73,7 @@ STRIP	:= llvm-strip
 # Compiler and Linker Flags for re and baresip
 #
 # NOTE: use -isystem to avoid warnings in system header files
-COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC -march=$(MARCH)
+COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC -march=$(MARCH) -O3
 
 LFLAGS := -fPIE -pie
 
