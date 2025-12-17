@@ -99,14 +99,14 @@ amr:
 	cd amr && \
 	rm -rf lib include && \
 	autoreconf --install && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS=-fPIC --prefix=$(PWD)/amr && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CXXFLAGS="-fPIC -O3" --prefix=$(PWD)/amr && \
 	make clean && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	make install
 	cd vo-amrwbenc && \
 	rm -rf include && \
 	autoreconf --install && \
-	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CFLAGS=-fPIC CXXFLAGS=-fPIC --prefix=$(PWD)/vo-amrwbenc && \
+	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared CFLAGS="-fPIC -O3" CXXFLAGS="-fPIC -O3" --prefix=$(PWD)/vo-amrwbenc && \
 	make clean && \
 	CC="$(CC) --sysroot $(SYSROOT)" CXX=$(CXX) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	make install
@@ -157,7 +157,7 @@ g7221:
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	ac_cv_func_malloc_0_nonnull=yes \
-	./configure --build=x86_64 --host=$(TARGET) --disable-shared CFLAGS="-fPIC" && \
+	./configure --build=x86_64 --host=$(TARGET) --disable-shared CFLAGS="-fPIC -O3" && \
 	CC="$(CC) --sysroot $(SYSROOT)" \
 	RANLIB=$(RANLIB) AR=$(AR) PATH=$(BIN):$(PATH) \
 	make
@@ -224,7 +224,7 @@ png:
 	NDK=$(NDK_PATH) \
 	API=$(API_LEVEL) \
 	CC=$(TOOLCHAIN)/bin/$(CLANG_TARGET)$(API_LEVEL)-clang \
-	./configure --host $(TARGET) --prefix=$(PWD)/png/output/$(ANDROID_TARGET_ARCH) --enable-pic --enable-shared=no && \
+	./configure --host $(TARGET) --prefix=$(PWD)/png/output/$(ANDROID_TARGET_ARCH) --enable-pic --enable-shared=no CFLAGS="-O3" && \
 	make -j$(CPU_COUNT)
 	mv png/.libs/libpng16.a png/.libs/libpng.a
 	rm -rf $(OUTPUT_DIR)/png/lib/$(ANDROID_TARGET_ARCH)
