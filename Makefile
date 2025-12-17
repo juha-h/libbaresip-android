@@ -73,35 +73,7 @@ LD	:= ld.lld
 RANLIB	:= llvm-ranlib
 STRIP	:= llvm-strip
 
-# Compiler and Linker Flags for re and baresip
-#
-# NOTE: use -isystem to avoid warnings in system header files
-COMMON_CFLAGS := -isystem $(SYSROOT)/usr/include -fPIE -fPIC -march=$(MARCH)
-
-LFLAGS := -fPIE -pie
-
-COMMON_FLAGS := \
-	EXTRA_CFLAGS="$(COMMON_CFLAGS) -DANDROID" \
-	EXTRA_CXXFLAGS="$(COMMON_CFLAGS) -DANDROID -DHAVE_PTHREAD" \
-	EXTRA_LFLAGS="$(LFLAGS)" \
-	SYSROOT=$(SYSROOT)/usr \
-	HAVE_INTTYPES_H=1 \
-	HAVE_GETOPT=1 \
-	HAVE_LIBRESOLV= \
-	HAVE_RESOLV= \
-	HAVE_PTHREAD=1 \
-	HAVE_PTHREAD_RWLOCK=1 \
-	HAVE_LIBPTHREAD= \
-	HAVE_INET_PTON=1 \
-	HAVE_INET6=1 \
-	HAVE_GETIFADDRS= \
-	PEDANTIC= \
-	OS=$(OS) \
-	ARCH=$(ARCH) \
-	USE_OPENSSL=yes \
-	USE_OPENSSL_DTLS=yes \
-	USE_OPENSSL_SRTP=yes
-
+# Android cmake flags
 CMAKE_ANDROID_FLAGS := \
 	-DANDROID=ON \
 	-DANDROID_PLATFORM=$(API_LEVEL) \
@@ -226,7 +198,7 @@ opus:
 	cd opus && \
 	rm -rf include_opus && \
 	./autogen.sh && \
-	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="$(COMMON_CFLAGS)" && \
+	CC="$(CC) --sysroot $(SYSROOT)" CC=$(CC) RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) ./configure --host=$(TARGET) --disable-shared --disable-doc --disable-extra-programs CFLAGS="-fPIC -O3" && \
 	CC="$(CC) --sysroot $(SYSROOT)" RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) make && \
 	mkdir -p include_opus/opus && \
 	cp include/* include_opus/opus
