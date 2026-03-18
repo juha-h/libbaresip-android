@@ -1,7 +1,7 @@
 libbaresip-android
 ==================
 
-This project shows how to build libbaresip for Android on Debian 13 using Android NDK. Resulting libbaresip can be used in Baresip based Android (Studio) applications.
+This project shows how to build and install libraries needed by https://github.com/juha-h/baresip-studio baresip+ application on Debian 13 using Android NDK.
 
 ## Step 0 - prerequisites
 
