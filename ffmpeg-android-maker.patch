@@ -37,17 +37,6 @@ index 75ff651..56e2ade 100755
   -DENABLE_TESTS=0 \
   -DENABLE_DOCS=0 \
   -DENABLE_TESTDATA=0 \
-diff --git a/scripts/libaom/download.sh b/scripts/libaom/download.sh
-index 09371cd..84e1c43 100755
---- a/scripts/libaom/download.sh
-+++ b/scripts/libaom/download.sh
-@@ -6,5 +6,5 @@ AOM_VERSION=v3.13.1
- 
- downloadTarArchive \
-   "libaom" \
--  "https://aomedia.googlesource.com/aom/+archive/${AOM_VERSION}.tar.gz" \
-+  "https://box.tutpro.com/tmp/${AOM_VERSION}.tar.gz" \
-   true
 diff --git a/scripts/libvpx/build.sh b/scripts/libvpx/build.sh
 index 4a39815..66d7f81 100755
 --- a/scripts/libvpx/build.sh
@@ -73,14 +62,3 @@ index 4a39815..66d7f81 100755
  
  ${MAKE_EXECUTABLE} clean
  ${MAKE_EXECUTABLE} -j${HOST_NPROC}
-diff --git a/scripts/libvpx/download.sh b/scripts/libvpx/download.sh
-index 5bed778..d0f8b30 100755
---- a/scripts/libvpx/download.sh
-+++ b/scripts/libvpx/download.sh
-@@ -6,5 +6,5 @@ VPX_VERSION=v1.16.0
- 
- downloadTarArchive \
-   "libvpx" \
--  "https://chromium.googlesource.com/webm/libvpx/+archive/${VPX_VERSION}.tar.gz" \
-+  "https://box.tutpro.com/tmp/${VPX_VERSION}.tar.gz" \
-   true
