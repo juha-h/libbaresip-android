@@ -385,20 +385,3 @@ download-sources:
 	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
 	patch -d ffmpeg-android-maker -p1 < ffmpeg-android-maker.patch
-
-clean:
-	-make distclean -C amr
-	make distclean -C baresip
-	rm -rf codec2/build
-	rm -rf g722/build
-	-make distclean -C g7221
-	-make clean -C bcg729
-	-make distclean -C openssl
-	-make distclean -C opus
-	make distclean -C re
-	rm -rf sndfile/build
-	rm -rf zrtpcpp/build
-	make distclean -C png
-	rm -rf ffmpeg-android-maker/build
-	rm -rf ffmpeg-android-maker/stats
-	rm -rf ffmpeg-android-maker/output
