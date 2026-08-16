@@ -292,7 +292,7 @@ debug:  all
 
 .PHONY: download-sources
 download-sources:
-	rm -fr amr baresip bcg729 codec2 g722 g7221 openssl opus \
+	rm -fr amr baresip bcg729 codec2 g722 g7221 ilbc openssl opus \
 		re sndfile vo-amrwbenc zrtpcpp
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
@@ -300,6 +300,7 @@ download-sources:
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/sippy/libg722.git -b v1.2.2 --single-branch g722
 	git clone https://github.com/freeswitch/libg7221.git -b master --single-branch g7221
+	git clone https://github.com/juha-h/libilbc.git -b main --single-branch ilbc
 	git clone https://github.com/openssl/openssl.git -b openssl-3.5 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
