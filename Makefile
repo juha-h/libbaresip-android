@@ -87,7 +87,7 @@ CMAKE_ANDROID_FLAGS := \
 
 MODULES := "augain;aaudio;dtls_srtp;opus;g711;libg722;g7221;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;mixminus;debug_cmd"
 
-APP_MODULES := "g729"
+APP_MODULES := "g729;ilbc"
 
 default: all
 
@@ -176,6 +176,17 @@ gzrtp:
 	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtpcpp/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 
+.PHONY: ilbc
+ilbc:
+	make clean_ilbclib -C ilbc
+	cd ilbc && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make
+	rm -rf $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+	cp ilbc/iLBC_rfc3951/libilbc.a $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+
 .PHONY: openssl
 openssl:
 	-make distclean -C openssl
@@ -223,7 +234,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp openssl opus sndfile libre.a
+libbaresip: Makefile libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -237,6 +248,8 @@ libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp openssl opus sndfile libre
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
+		-DILBC_INCLUDE_DIR=$(PWD)/ilbc/iLBC_rfc3951 \
+		-DILBC_LIBRARY=$(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)/libilbc.a \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
