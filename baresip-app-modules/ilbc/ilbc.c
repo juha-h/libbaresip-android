@@ -33,10 +33,9 @@
  */
 
 enum {
+	DEFAULT_MODE = 20, /* 20ms or 30ms */
 	USE_ENHANCER = 1
 };
-
-static uint32_t ilbc_mode = 20;
 
 struct auenc_state {
 	iLBC_Enc_Inst_t enc;
@@ -187,7 +186,7 @@ static int encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 	if (!st)
 		return ENOMEM;
 
-	set_encoder_mode(st, ilbc_mode);
+	set_encoder_mode(st, DEFAULT_MODE);
 
 	if (str_isset(fmtp))
 		encoder_fmtp_decode(st, fmtp);
@@ -217,7 +216,7 @@ static int decode_update(struct audec_state **adsp,
 	if (!st)
 		return ENOMEM;
 
-	set_decoder_mode(st, ilbc_mode);
+	set_decoder_mode(st, DEFAULT_MODE);
 
 	if (str_isset(fmtp))
 		decoder_fmtp_decode(st, fmtp);
@@ -352,10 +351,8 @@ static struct aucodec ilbc = {
 
 static int module_init(void)
 {
-	conf_get_u32(conf_cur(), "ilbc_mode", &ilbc_mode);
-
 	(void)re_snprintf(ilbc_fmtp, sizeof(ilbc_fmtp),
-			  "mode=%d", ilbc_mode);
+			  "mode=%d", DEFAULT_MODE);
 
 	aucodec_register(baresip_aucodecl(), &ilbc);
 	return 0;
