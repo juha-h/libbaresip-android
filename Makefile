@@ -249,7 +249,6 @@ libbaresip: Makefile libre.a
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
 		-DILBC_INCLUDE_DIR=$(PWD)/ilbc/iLBC_rfc3951 \
-		-DILBC_LIBRARY=$(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)/libilbc.a \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
