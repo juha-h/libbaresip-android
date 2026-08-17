@@ -52,12 +52,64 @@ struct audec_state {
 
 
 static char ilbc_fmtp[32];
-
 /* Global pointer to the active encoder state for pragmatic encoder/decoder
  * matching when peers mis-advertise fmtp. This is a heuristic to avoid
  * packetization mismatch (e.g. peer advertises 30ms but sends 20ms).
  */
 static struct auenc_state *g_aenc = NULL;
+
+/* Per-decoder detection state (kept external because we cannot modify
+ * struct audec_state). We keep a small linked list keyed by audec_state*.
+ */
+struct detect_node {
+	struct detect_node *next;
+	struct audec_state *dec;
+	int detected_mode; /* last detected mode (20 or 30), 0 = none */
+	int count;         /* consecutive detections of detected_mode */
+};
+static struct detect_node *det_list = NULL;
+
+static struct detect_node *det_find(struct audec_state *st)
+{
+	struct detect_node *n = det_list;
+	for (; n; n = n->next) {
+		if (n->dec == st)
+			return n;
+	}
+	return NULL;
+}
+
+static struct detect_node *det_add(struct audec_state *st)
+{
+	struct detect_node *n;
+
+	n = mem_alloc(sizeof(*n), NULL);
+	if (!n)
+		return NULL;
+	n->dec = st;
+	n->detected_mode = 0;
+	n->count = 0;
+	n->next = det_list;
+	det_list = n;
+	return n;
+}
+
+static void det_remove(struct audec_state *st)
+{
+	struct detect_node *n = det_list, *prev = NULL;
+	while (n) {
+		if (n->dec == st) {
+			if (prev)
+				prev->next = n->next;
+			else
+				det_list = n->next;
+			mem_deref(n);
+			return;
+		}
+		prev = n;
+		n = n->next;
+	}
+}
 
 
 static void set_encoder_mode(struct auenc_state *st, int mode)
@@ -65,7 +117,7 @@ static void set_encoder_mode(struct auenc_state *st, int mode)
 	if (st->mode == mode)
 		return;
 
-	info("ilbc: set iLBC decoder mode %dms (was %d)\n", mode, st->mode);
+	info("ilbc: set iLBC encoder mode %dms\n", mode);
 
 	st->mode = mode;
 
@@ -112,8 +164,18 @@ static void set_decoder_mode(struct audec_state *st, int mode)
 		return;
 	}
 
-	/* initialize decoder state, but do not overwrite nsamp */
+	info("ilbc: set_decoder_mode: nsamp=%u\n", (unsigned)st->nsamp);
+
+	/* initialize decoder state, but don't overwrite nsamp */
+	info("ilbc: calling initDecode(mode=%d)\n", mode);
 	initDecode(&st->dec, mode, USE_ENHANCER);
+	info("ilbc: initDecode completed (mode=%d)\n", mode);
+
+	/* sanity check */
+	if (st->nsamp != BLOCKL_20MS && st->nsamp != BLOCKL_30MS) {
+		warning("ilbc: unexpected nsamp=%u after set_decoder_mode\n",
+			(unsigned)st->nsamp);
+	}
 }
 
 
@@ -126,8 +188,21 @@ static void encoder_fmtp_decode(struct auenc_state *st, const char *fmtp)
 
 	if (re_regex(fmtp, strlen(fmtp), "mode=[0-9]+", &mode))
 		return;
-
-	set_encoder_mode(st, pl_u32(&mode));
+	{
+		uint32_t m = pl_u32(&mode);
+		/* Conservative: do not immediately switch to 30ms solely on remote SDP,
+		 * because some peers mis-advertise (fmtp=30) while sending 20ms RTP.
+		 * Keep encoder at current/default (20ms) until payload-length detection
+		 * confirms remote's actual packetization.
+		 */
+		if (m == 30 && st->mode != 30) {
+			info("ilbc: encoder_fmtp_decode: defer switching to 30ms until confirmed by RTP\n");
+			/* Optionally remember desired mode here if needed */
+		}
+		else {
+			set_encoder_mode(st, m);
+		}
+	}
 }
 
 
@@ -141,21 +216,7 @@ static void decoder_fmtp_decode(struct audec_state *st, const char *fmtp)
 	if (re_regex(fmtp, strlen(fmtp), "mode=[0-9]+", &mode))
 		return;
 
-	{
-		uint32_t m = pl_u32(&mode);
-		/* Conservative: do not immediately switch to 30ms solely on remote SDP,
-		 * because some peers mis-advertise (fmtp=30) while sending 20ms RTP.
-		 * Keep encoder at current/default (20ms) until payload-length detection
-		 * confirms remote's actual packetization.
-		 */
-		if (m == 30 && st->mode != 30) {
-			info("ilbc: encoder_fmtp_decode: defer switching to 30ms until confirmed by RTP\n");
-			/* remember desired mode? Optionally: st->desired_mode = 30; */
-		}
-		else {
-			set_encoder_mode(st, m);
-		}
-    }
+	set_decoder_mode(st, pl_u32(&mode));
 }
 
 
@@ -171,9 +232,29 @@ static void encode_destructor(void *arg)
 static void decode_destructor(void *arg)
 {
 	struct audec_state *st = arg;
+	/* Remove detection state for this decoder if any */
+	det_remove(st);
 	(void)st;
 }
 
+/*
+static int check_ptime(const struct auenc_param *prm)
+{
+	if (!prm)
+		return 0;
+
+	switch (prm->ptime) {
+
+	case 20:
+	case 30:
+		return 0;
+
+	default:
+		warning("ilbc: invalid ptime %u ms\n", prm->ptime);
+		return EINVAL;
+	}
+}
+*/
 
 static int encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 			 struct auenc_param *prm, const char *fmtp)
@@ -182,19 +263,20 @@ static int encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 
 	if (!aesp || !ac || !prm)
 		return EINVAL;
-	if (*aesp)
-		return 0;
-
-	info("ilbc: encode_update called aesp=%p fmtp=%s\n", (void *)*aesp, fmtp ? fmtp : "(null)");
+	//	if (check_ptime(prm))
+	//		return EINVAL;
+	info("ilbc: encode_update called aesp=%p fmtp=%s\n", (void *)*aesp, fmtp?fmtp:"(null)");
 
 	/* If encoder already exists, apply fmtp changes (if any) and update global pointer */
 	if (*aesp) {
-		if (str_isset(fmtp))
+		if (str_isset(fmtp)) {
+			info("ilbc: encode_update applying fmtp to existing encoder: %s\n", fmtp);
 			encoder_fmtp_decode(*aesp, fmtp);
+		}
 		g_aenc = *aesp;
 		return 0;
 	}
- 
+
 	st = mem_zalloc(sizeof(*st), encode_destructor);
 	if (!st)
 		return ENOMEM;
@@ -204,9 +286,14 @@ static int encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 	if (str_isset(fmtp))
 		encoder_fmtp_decode(st, fmtp);
 
+	/* update parameters after SDP was decoded */
+//	if (prm) {
+//		prm->ptime = st->mode;
+//	}
+
 	*aesp = st;
 	/* remember encoder globally so decoder-side detection can adjust it if peer lied */
-	g_aenc = st;	
+	g_aenc = st;
 
 	return 0;
 }
@@ -220,14 +307,16 @@ static int decode_update(struct audec_state **adsp,
 	if (!adsp || !ac)
 		return EINVAL;
 
-	info("ilbc: decode_update called adsp=%p fmtp=%s\n", (void *)*adsp, fmtp ? fmtp : "(null)");
+	info("ilbc: decode_update called adsp=%p fmtp=%s\n", (void *)*adsp, fmtp?fmtp:"(null)");
 
 	/* If decoder already exists, apply fmtp changes (if any) */
 	if (*adsp) {
-		if (str_isset(fmtp))
+		if (str_isset(fmtp)) {
+			info("ilbc: decode_update applying fmtp to existing decoder: %s\n", fmtp);
 			decoder_fmtp_decode(*adsp, fmtp);
+		}
 		return 0;
-	}	
+	}
 
 	st = mem_zalloc(sizeof(*st), decode_destructor);
 	if (!st)
@@ -237,6 +326,10 @@ static int decode_update(struct audec_state **adsp,
 
 	if (str_isset(fmtp))
 		decoder_fmtp_decode(st, fmtp);
+
+	/* create detection state for this decoder */
+	if (!det_find(st))
+		det_add(st);
 
 	*adsp = st;
 
@@ -273,6 +366,9 @@ static int encode(struct auenc_state *st, bool *marker, uint8_t *buf,
 
 	*len = st->enc_bytes;
 
+	info("ilbc: encode called mode=%d enc_bytes=%u sampc=%zu -> pkt_len=%u\n",
+	     st->mode, (unsigned)st->enc_bytes, sampc, (unsigned)*len);
+
 	return 0;
 }
 
@@ -285,8 +381,11 @@ static int do_dec(struct audec_state *st, int16_t *sampv, size_t *sampc,
 	uint32_t i;
 
 	/* Make sure there is enough space in the buffer */
-	if (*sampc < st->nsamp)
+	if (*sampc < st->nsamp) {
+		warning("ilbc: do_dec: insuf buf: sampc_in=%zu nsamp=%u\n",
+			*sampc, (unsigned)st->nsamp);
 		return ENOMEM;
+	}
 
 	iLBC_decode(float_buf,      /* (o) decoded signal block */
 		    (uint8_t *)buf, /* (i) encoded signal bits */
@@ -300,6 +399,8 @@ static int do_dec(struct audec_state *st, int16_t *sampv, size_t *sampc,
 
 	*sampc = st->nsamp;
 
+	info("ilbc: do_dec done produced %u samples\n", (unsigned)*sampc);
+
 	return 0;
 }
 
@@ -311,6 +412,9 @@ static int decode(struct audec_state *st, int fmt, void *sampv,
 
 	if (fmt != AUFMT_S16LE)
 		return ENOTSUP;
+
+	info("ilbc: decode called fmt=%d buf_len=%zu dec_bytes=%zu nsamp=%u\n",
+	     fmt, len, (size_t)st->dec_bytes, (unsigned)st->nsamp);
 
 	/* Try to detect mode by payload length */
 	if (st->dec_bytes != len) {
@@ -334,16 +438,39 @@ static int decode(struct audec_state *st, int fmt, void *sampv,
 			return EINVAL;
 		}
 
-		/* If peer is actually sending a different packetization than SDP, adjust
-		 * our encoder to match the remote payloadization. This is a pragmatic
-		 * heuristic to avoid rattling when remote mis-advertises fmtp.
+		/* Debounced confirmation: require a small number of consecutive
+		 * detections of the same mode before switching our encoder. We
+		 * keep per-decoder detection state in det_list (see above) since we
+		 * cannot modify audec_state.
 		 */
-		if (g_aenc && g_aenc->mode != st->mode) {
-			info("ilbc: adjusting local encoder to match remote payload mode %dms\n",
-			     st->mode);
-			set_encoder_mode(g_aenc, st->mode);
+		{
+			struct detect_node *dn = det_find(st);
+			if (!dn)
+				dn = det_add(st);
+
+			if (g_aenc && g_aenc->mode != st->mode) {
+				if (dn->detected_mode == st->mode) {
+					dn->count++;
+				}
+				else {
+					dn->detected_mode = st->mode;
+					dn->count = 1;
+				}
+
+				/* require 2 consecutive packets to confirm */
+				if (dn->count >= 2) {
+					info("ilbc: confirmed remote payload mode %dms after %d pkts, adjusting encoder\n",
+					     st->mode, dn->count);
+					set_encoder_mode(g_aenc, st->mode);
+					dn->detected_mode = 0;
+					dn->count = 0;
+				}
+			}
 		}
 	}
+
+	info("ilbc: calling do_dec nsamp=%u sampc_in=%zu len=%zu\n",
+	     (unsigned)st->nsamp, sampc ? *sampc : 0, len);
 
 	return do_dec(st, (int16_t *)sampv, sampc, buf, len);
 }
@@ -380,16 +507,16 @@ static struct aucodec ilbc = {
 static int module_init(void)
 {
 	(void)re_snprintf(ilbc_fmtp, sizeof(ilbc_fmtp),
-			  "mode=%d", DEFAULT_MODE);
+		  "mode=%d", DEFAULT_MODE);
 
-	aucodec_register(baresip_aucodecl(), &ilbc);
+	taucodec_register(baresip_aucodecl(), &ilbc);
 	return 0;
 }
 
 
 static int module_close(void)
 {
-	aucodec_unregister(&ilbc);
+	taucodec_unregister(&ilbc);
 	return 0;
 }
 
