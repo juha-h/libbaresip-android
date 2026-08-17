@@ -509,14 +509,14 @@ static int module_init(void)
 	(void)re_snprintf(ilbc_fmtp, sizeof(ilbc_fmtp),
 		  "mode=%d", DEFAULT_MODE);
 
-	taucodec_register(baresip_aucodecl(), &ilbc);
+	aucodec_register(baresip_aucodecl(), &ilbc);
 	return 0;
 }
 
 
 static int module_close(void)
 {
-	taucodec_unregister(&ilbc);
+	aucodec_unregister(&ilbc);
 	return 0;
 }
 
