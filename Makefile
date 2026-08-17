@@ -90,7 +90,7 @@ CMAKE_ANDROID_FLAGS := \
 
 MODULES := "augain;aaudio;dtls_srtp;opus;g711;libg722;g7221;codec2;amr;gzrtp;stun;turn;ice;presence;mwi;account;natpmp;srtp;uuid;sndfile;mixminus;debug_cmd;avcodec;avformat;vp8;vp9;selfview;av1;snapshot"
 
-APP_MODULES := "g729"
+APP_MODULES := "g729;ilbc"
 
 default: all
 
@@ -178,6 +178,17 @@ gzrtp:
 	rm -rf $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 	mkdir -p $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
 	cp zrtpcpp/build/clients/no_client/libzrtpcppcore.a $(OUTPUT_DIR)/gzrtp/lib/$(ANDROID_TARGET_ARCH)
+
+.PHONY: ilbc
+ilbc:
+	make clean_ilbclib -C ilbc
+	cd ilbc && \
+	CC="$(CC) --sysroot $(SYSROOT)" \
+	RANLIB=$(RANLIB) AR=$(AR) PATH=$(PATH) \
+	make
+	rm -rf $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+	mkdir -p $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
+	cp ilbc/iLBC_rfc3951/libilbc.a $(OUTPUT_DIR)/ilbc/lib/$(ANDROID_TARGET_ARCH)
 
 .PHONY: openssl
 openssl:
@@ -288,7 +299,7 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp openssl opus sndfile png ffmpeg libyuv libre.a
+libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp ilbc openssl opus sndfile png ffmpeg libyuv libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
@@ -322,6 +333,7 @@ libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp openssl opus sndfile png f
 		-DRE_INCLUDE_DIR=$(PWD)/re/include \
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl \
 		-DG729_INCLUDE_DIR=$(PWD)/bcg729/include \
+		-DILBC_INCLUDE_DIR=$(PWD)/ilbc/iLBC_rfc3951 \
 		-DOPUS_INCLUDE_DIR=$(PWD)/opus/include_opus \
 		-DOPUS_LIBRARY=$(OUTPUT_DIR)/opus/lib/$(ANDROID_TARGET_ARCH)/libopus.a \
 		-DCODEC2_INCLUDE_DIR=$(PWD)/codec2/build \
@@ -365,7 +377,7 @@ debug:	all
 
 .PHONY: download-sources
 download-sources:
-	rm -fr amr baresip bcg729 codec2 g722 g7221 openssl opus \
+	rm -fr amr baresip bcg729 codec2 g722 g7221 ilbc openssl opus \
 		re sndfile vo-amrwbenc zrtpcpp png ffmpeg-android-maker libyuv
 	git clone https://git.code.sf.net/p/opencore-amr/code -b v0.1.6 --single-branch amr
 	git clone https://github.com/baresip/baresip.git
@@ -373,6 +385,7 @@ download-sources:
 	git clone https://github.com/drowe67/codec2.git -b 1.2.0 --single-branch
 	git clone https://github.com/sippy/libg722.git -b v1.2.2 --single-branch g722
 	git clone https://github.com/freeswitch/libg7221.git -b master --single-branch g7221
+	git clone https://github.com/juha-h/libilbc.git -b main --single-branch ilbc
 	git clone https://github.com/openssl/openssl.git -b openssl-3.5 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
