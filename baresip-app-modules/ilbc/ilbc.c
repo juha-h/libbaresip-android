@@ -41,6 +41,8 @@ struct auenc_state {
 	iLBC_Enc_Inst_t enc;
 	int mode;
 	uint32_t enc_bytes;
+	struct aubuf *ab;
+	uint32_t nsamp;
 };
 
 struct audec_state {
@@ -67,10 +69,12 @@ static void set_encoder_mode(struct auenc_state *st, int mode)
 
 	case 20:
 		st->enc_bytes = NO_OF_BYTES_20MS;
+		st->nsamp = BLOCKL_20MS;
 		break;
 
 	case 30:
 		st->enc_bytes = NO_OF_BYTES_30MS;
+		st->nsamp = BLOCKL_30MS;
 		break;
 
 	default:
@@ -141,7 +145,7 @@ static void decoder_fmtp_decode(struct audec_state *st, const char *fmtp)
 static void encode_destructor(void *arg)
 {
 	struct auenc_state *st = arg;
-	(void)st;
+	mem_deref(st->ab);
 }
 
 
@@ -174,11 +178,11 @@ static int encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 			 struct auenc_param *prm, const char *fmtp)
 {
 	struct auenc_state *st;
+	int err;
 
 	if (!aesp || !ac || !prm)
 		return EINVAL;
-	//	if (check_ptime(prm))
-	//		return EINVAL;
+
 	if (*aesp)
 		return 0;
 
@@ -191,10 +195,11 @@ static int encode_update(struct auenc_state **aesp, const struct aucodec *ac,
 	if (str_isset(fmtp))
 		encoder_fmtp_decode(st, fmtp);
 
-	/* update parameters after SDP was decoded */
-//	if (prm) {
-//		prm->ptime = st->mode;
-//	}
+	err = aubuf_alloc(&st->ab, st->nsamp * 2 * 2, st->nsamp * 2 * 10);
+	if (err) {
+		mem_deref(st);
+		return err;
+	}
 
 	*aesp = st;
 
@@ -230,9 +235,23 @@ static int decode_update(struct audec_state **adsp,
 static int encode(struct auenc_state *st, bool *marker, uint8_t *buf,
 		  size_t *len, int fmt, const void *sampv, size_t sampc)
 {
-	float float_buf[sampc];
+	float float_buf[st->nsamp];
+	int16_t s16[st->nsamp];
 	uint32_t i;
+	int err;
 	(void)marker;
+
+	if (fmt != AUFMT_S16LE)
+		return ENOTSUP;
+
+	err = aubuf_write(st->ab, sampv, sampc * 2);
+	if (err)
+		return err;
+
+	if (aubuf_cur_size(st->ab) < st->nsamp * 2) {
+		*len = 0;
+		return 0;
+	}
 
 	/* Make sure there is enough space */
 	if (*len < st->enc_bytes) {
@@ -241,13 +260,11 @@ static int encode(struct auenc_state *st, bool *marker, uint8_t *buf,
 		return ENOMEM;
 	}
 
-	if (fmt != AUFMT_S16LE)
-		return ENOTSUP;
+	aubuf_read(st->ab, (uint8_t *)s16, st->nsamp * 2);
 
 	/* Convert from 16-bit samples to float */
-	for (i=0; i<sampc; i++) {
-		const int16_t v = ((int16_t *)sampv)[i];
-		float_buf[i] = (float)v;
+	for (i=0; i<st->nsamp; i++) {
+		float_buf[i] = (float)s16[i];
 	}
 
 	iLBC_encode(buf,            /* (o) encoded data bits iLBC */
