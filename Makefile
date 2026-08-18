@@ -299,7 +299,8 @@ libre.a: Makefile
 		-DOPENSSL_ROOT_DIR=$(PWD)/openssl && \
 	cmake --build . --target re -j$(CPU_COUNT)
 
-libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp ilbc openssl opus sndfile png ffmpeg libyuv libre.a
+#libbaresip: Makefile amr g729 codec2 g722 g7221 gzrtp ilbc openssl opus sndfile png ffmpeg libyuv libre.a
+libbaresip: Makefile libre.a
 	cd baresip && \
 	rm -rf build && rm -rf .cache && mkdir build && cd build && \
 	cmake .. \
