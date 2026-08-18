@@ -235,8 +235,8 @@ static int decode_update(struct audec_state **adsp,
 static int encode(struct auenc_state *st, bool *marker, uint8_t *buf,
 		  size_t *len, int fmt, const void *sampv, size_t sampc)
 {
-	float float_buf[st->nsamp];
-	int16_t s16[st->nsamp];
+	float float_buf[BLOCKL_30MS];
+	int16_t s16[BLOCKL_30MS];
 	uint32_t i;
 	int err;
 	(void)marker;
@@ -280,7 +280,7 @@ static int encode(struct auenc_state *st, bool *marker, uint8_t *buf,
 static int do_dec(struct audec_state *st, int16_t *sampv, size_t *sampc,
 		  const uint8_t *buf, size_t len)
 {
-	float float_buf[st->nsamp];
+	float float_buf[BLOCKL_30MS];
 	const int mode = len ? 1 : 0;
 	uint32_t i;
 
