@@ -11,6 +11,21 @@ index 8f83171..e6f4127 100755
  # Main build loop
  for ABI in ${FFMPEG_ABIS_TO_BUILD[@]}
  do
+diff --git a/scripts/common-functions.sh b/scripts/common-functions.sh
+index 5867335..fd7e479 100755
+--- a/scripts/common-functions.sh
++++ b/scripts/common-functions.sh
+@@ -17,7 +17,9 @@ function downloadTarArchive() {
+   echo "Ensuring sources of ${LIBRARY_NAME} in ${LIBRARY_SOURCES}"
+ 
+   if [[ ! -d "$LIBRARY_SOURCES" ]]; then
+-    curl -LO ${DOWNLOAD_URL}
++    curl -LO "${DOWNLOAD_URL}" \
++	 --retry 5 --retry-delay 2 --retry-all-errors \
++	 --connect-timeout 15
+ 
+     EXTRACTION_DIR="."
+     if [ "$NEED_EXTRA_DIRECTORY" = true ] ; then
 diff --git a/scripts/ffmpeg/build.sh b/scripts/ffmpeg/build.sh
 index 703ac96..a3c9553 100755
 --- a/scripts/ffmpeg/build.sh
