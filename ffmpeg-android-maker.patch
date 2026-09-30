@@ -52,6 +52,32 @@ index 75ff651..56e2ade 100755
   -DENABLE_TESTS=0 \
   -DENABLE_DOCS=0 \
   -DENABLE_TESTDATA=0 \
+diff --git a/scripts/libaom/download.sh b/scripts/libaom/download.sh
+index 8bc0bf1..a1c6b6e 100755
+--- a/scripts/libaom/download.sh
++++ b/scripts/libaom/download.sh
+@@ -1,10 +1,15 @@
+ #!/usr/bin/env bash
+ 
+-source ${SCRIPTS_DIR}/common-functions.sh
++AOM_VERSION=3.15.1
+ 
+-AOM_VERSION=v3.14.1
++if [[ ! -d "libaom-${AOM_VERSION}" ]]; then
+ 
+-downloadTarArchive \
+-  "libaom" \
+-  "https://aomedia.googlesource.com/aom/+archive/${AOM_VERSION}.tar.gz" \
+-  true
++  curl -LO https://storage.googleapis.com/aom-releases/libaom-${AOM_VERSION}.tar.gz
++
++  tar xf libaom-${AOM_VERSION}.tar.gz
++
++  rm libaom-${AOM_VERSION}.tar.gz
++
++fi
++
++export SOURCES_DIR_libaom=$(pwd)/libaom-${AOM_VERSION}
 diff --git a/scripts/libvpx/build.sh b/scripts/libvpx/build.sh
 index 4a39815..66d7f81 100755
 --- a/scripts/libvpx/build.sh
@@ -77,3 +103,29 @@ index 4a39815..66d7f81 100755
  
  ${MAKE_EXECUTABLE} clean
  ${MAKE_EXECUTABLE} -j${HOST_NPROC}
+diff --git a/scripts/libvpx/download.sh b/scripts/libvpx/download.sh
+index 5bed778..f68fb92 100755
+--- a/scripts/libvpx/download.sh
++++ b/scripts/libvpx/download.sh
+@@ -1,10 +1,15 @@
+ #!/usr/bin/env bash
+ 
+-source ${SCRIPTS_DIR}/common-functions.sh
++VPX_VERSION=1.17.0
+ 
+-VPX_VERSION=v1.16.0
++if [[ ! -d "libvpx-${VPX_VERSION}" ]]; then
+ 
+-downloadTarArchive \
+-  "libvpx" \
+-  "https://chromium.googlesource.com/webm/libvpx/+archive/${VPX_VERSION}.tar.gz" \
+-  true
++  curl -LO https://github.com/webmproject/libvpx/archive/v${VPX_VERSION}/libvpx-${VPX_VERSION}.tar.gz
++
++  tar xf libvpx-${VPX_VERSION}.tar.gz
++
++  rm libvpx-${VPX_VERSION}.tar.gz
++
++fi
++
++export SOURCES_DIR_libvpx=$(pwd)/libvpx-${VPX_VERSION}
