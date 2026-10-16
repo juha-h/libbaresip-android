@@ -307,5 +307,6 @@ download-sources:
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
 	git clone https://git.code.sf.net/p/opencore-amr/vo-amrwbenc --single-branch vo-amrwbenc
 	git clone https://github.com/juha-h/ZRTPCPP.git -b master --single-branch zrtpcpp
+	cp session.cpp baresip/modules/gzrtp
 	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
