@@ -397,5 +397,5 @@ download-sources:
 	git clone https://chromium.googlesource.com/libyuv/libyuv
 	patch -d g7221 -p1 < g7221-patch
 	patch -d re -p1 < re-patch
-	patch -d baresip -p1 < baresip-patch
+	cp session.cpp baresip/modules/gzrtp
 	patch -d ffmpeg-android-maker -p1 < ffmpeg-android-maker.patch
