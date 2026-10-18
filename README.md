@@ -13,7 +13,7 @@ or use NDK that comes with Android Studio.  NDK version must match ndkVersion in
 
 Install the following Debian packages:
 
-apt install wget cmake make libtool m4 automake pkg-config
+apt install wget cmake make libtool m4 automake pkg-config curl
 
 ## Step 1 - clone libbaresip-android
 
