@@ -301,7 +301,7 @@ download-sources:
 	git clone https://github.com/sippy/libg722.git -b v1.2.2 --single-branch g722
 	git clone https://github.com/freeswitch/libg7221.git -b master --single-branch g7221
 	git clone https://github.com/juha-h/libilbc.git -b main --single-branch ilbc
-	git clone https://github.com/openssl/openssl.git -b openssl-3.5 --single-branch openssl
+	git clone https://github.com/openssl/openssl.git -b openssl-4.0 --single-branch openssl
 	git clone https://github.com/xiph/opus.git -b v1.4 --single-branch
 	git clone https://github.com/baresip/re.git
 	git clone https://github.com/juha-h/libsndfile.git -b master --single-branch sndfile
